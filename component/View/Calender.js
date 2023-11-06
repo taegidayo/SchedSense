@@ -17,6 +17,7 @@ import {
   subWeeks,
   getDay,
 } from "date-fns";
+import { db } from "../../config/firebaseConfig";
 
 const Calender = ({ onDateClick }) => {
   const day = ["일", "월", "화", "수", "목", "금", "토"];
