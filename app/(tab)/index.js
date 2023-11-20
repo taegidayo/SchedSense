@@ -1,8 +1,8 @@
 import { useRef, useState } from "react";
-import { Animated, View } from "react-native";
+import { Animated, Text, TouchableOpacity, View } from "react-native";
 import { PanGestureHandler, State } from "react-native-gesture-handler";
-import { Calender } from "../component";
-import { config, db } from "../config/firebaseConfig";
+import { Calender } from "../../component";
+import { config, db } from "../../config/firebaseConfig";
 import {
   getFirestore,
   collection,
@@ -10,6 +10,7 @@ import {
   setDoc,
   doc,
 } from "firebase/firestore/lite";
+import { router } from "expo-router";
 
 export default function App() {
   const handleDateClick = async (selectedDate) => {
@@ -26,6 +27,15 @@ export default function App() {
   return (
     <View style={{ flex: 1 }}>
       <Calender onDateClick={handleDateClick} />
+      <View style={{ backgroundColor: "#FF00FF" }}>
+        <TouchableOpacity
+          onPress={() => {
+            router.push("/calendar");
+          }}
+        >
+          <Text>안녕sadsad</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }

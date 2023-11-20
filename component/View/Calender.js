@@ -148,9 +148,7 @@ const Calender = ({ onDateClick }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: {},
   monthHeader: {
     justifyContent: "center",
     alignItems: "center",
@@ -159,6 +157,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "grey",
   },
   week: {
+    height: 40,
     flexDirection: "row",
     justifyContent: "space-between",
   },

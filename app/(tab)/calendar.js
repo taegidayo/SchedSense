@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
-import { Animated, View } from "react-native";
+import { Animated, Text, View } from "react-native";
 import { PanGestureHandler, State } from "react-native-gesture-handler";
-import { MonthView, WeekView } from "../component";
+import { MonthView, WeekView } from "../../component";
 
 export default function App() {
   const [viewMode, setViewMode] = useState("month"); // 'month' 또는 'week'
@@ -35,18 +35,7 @@ export default function App() {
 
   return (
     <View style={{ flex: 1 }}>
-      <PanGestureHandler
-        onGestureEvent={onGestureEvent}
-        onHandlerStateChange={onHandlerStateChange}
-      >
-        <Animated.View style={{ flex: 1, transform: [{ translateY }] }}>
-          {viewMode === "month" ? (
-            <MonthView onDateClick={handleDateClick} />
-          ) : (
-            <WeekView />
-          )}
-        </Animated.View>
-      </PanGestureHandler>
+      <Text>asd</Text>
     </View>
   );
 }

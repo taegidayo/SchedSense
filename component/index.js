@@ -1,3 +1,4 @@
 import { Calender } from "./View/Calender";
+import { Map } from "./View/Map";
 
-export { Calender };
+export { Calender, Map };
