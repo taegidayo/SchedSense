@@ -112,7 +112,6 @@ const getLocation = async (level1, level2, level3, point) => {
     data = closestLocation;
   }
 
-  console.log(data);
   return data;
 };
 

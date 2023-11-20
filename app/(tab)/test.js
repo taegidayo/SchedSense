@@ -1,12 +1,20 @@
-import { Platform, Text, View } from "react-native";
+import {
+  Platform,
+  ActivityIndicator,
+  Text,
+  View,
+  StyleSheet,
+  FlatList,
+} from "react-native";
 import { getWeatherByPoint, getLocation } from "../../function";
 import { useEffect, useState } from "react";
 import * as Location from "expo-location";
 const Test = () => {
   const [point, setPoint] = useState({});
-  const [weather, setWeather] = useState({});
+  const [weather, setWeather] = useState([]);
   const [address, setAddress] = useState({});
   const [location, setLocation] = useState({});
+  const [isLoaded, setIsLoaded] = useState(false);
 
   getCurrentLocation = async () => {
     var { coords } = await Location.getCurrentPositionAsync();
@@ -21,19 +29,26 @@ const Test = () => {
     );
   };
   const a = async () => {
-    if (Object.keys(address).length !== 0) {
-      getWeatherByPoint(location.X, location.Y);
+    if (Object.keys(location).length !== 0) {
+      // setWeather(await getWeatherByPoint(location.X, location.Y));
+      setWeather(await getWeatherByPoint(location.X, location.Y));
+      setIsLoaded(true);
+      console.log(weather[0]);
     }
   };
 
   useEffect(() => {
-    getCurrentLocation();
+    setTimeout(() => {
+      getCurrentLocation();
+    }, 1000);
+    // getCurrentLocation();
   }, []);
   useEffect(() => {
     funSetLocation();
-
-    // a();
   }, [address]);
+  useEffect(() => {
+    a();
+  }, [location]);
 
   /**
    *
@@ -52,15 +67,39 @@ const Test = () => {
     }
   };
 
-  useEffect(() => {
-    if (Object.keys(weather).length !== 0) {
-    }
-  }, [weather]);
-
   return (
-    <View>
-      <Text>asd {location.X}</Text>
+    <View style={styles.container}>
+      {isLoaded ? (
+        <FlatList
+          data={weather}
+          horizontal={true}
+          renderItem={({ item }) => {
+            return (
+              <View style={styles.item}>
+                <Text>
+                  {item.fcstTime}: {item.POP}
+                </Text>
+              </View>
+            );
+          }}
+          keyExtractor={(item, index) => index.toString()}
+        />
+      ) : (
+        <ActivityIndicator size="large" color="#0000ff" />
+      )}
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    marginTop: 20,
+  },
+  item: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+  },
+});
 export default Test;

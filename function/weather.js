@@ -15,11 +15,12 @@ getFormattedDate = (date) => {
  * @param {number} x
  * @param {number} y
  *
- * x와 y의 좌표값을 입력하면 해당 지역의 날씨를 전달해주는 함수
+ * @description x와 y의 좌표값을 입력하면 해당 지역의 날씨를 전달해주는 함수
+ *
+ * @return {object} 날씨 정보가 있는 JSON ARRAY를 반환함. 각 객체정보는 {basetime:업데이트시간,baseDate:업데이트일자,fcstTime:해당날씨 시간,fcstDate,해당날씨 일자,기타(README.md확인)}
  */
 const getWeatherByPoint = async (x, y) => {
-  console.log(x, y);
-
+  var finalArray = [];
   //###################################################x,y값과 날짜를 기반으로 api url을 완성시키는 코드################################################
   var url = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=${process.env.EXPO_PUBLIC_API_KEY}&pageNo=1&numOfRows=1000&dataType=json`;
 
@@ -58,20 +59,20 @@ const getWeatherByPoint = async (x, y) => {
       baseTime[timeindex]
     }&nx=${x}&ny=${y}`;
   //todo 제거하기
-  console.log(url);
 
   //#####생성된 apiurl을 기반으로 fetch함수를 사용해 받아온 값을 기반으로 같은 날짜,같은 시간인 item을 합치고, 다듬는 과정
-  fetch(url)
+  await fetch(url)
     .then((response) => response.json())
     .then((json) => {
-      console.log(json.response.body.items.item[0]);
-
       const grouped = json.response.body.items.item.reduce((acc, item) => {
         const key = item.fcstTime + "_" + item.fcstDate;
         if (!acc[key]) {
           acc[key] = {
+            baseDate: item.baseDate,
+            baseTime: item.baseTime,
             fcstTime: item.fcstTime,
             fcstDate: item.fcstDate,
+
             [item.category]: item.fcstValue,
           };
         } else {
@@ -79,8 +80,7 @@ const getWeatherByPoint = async (x, y) => {
         }
         return acc;
       }, {});
-
-      const finalArray = Object.values(grouped);
+      finalArray = Object.values(grouped);
 
       finalArray.sort((a, b) => {
         if (a.fcstDate === b.fcstDate) {
@@ -88,11 +88,9 @@ const getWeatherByPoint = async (x, y) => {
         }
         return a.fcstDate.localeCompare(b.fcstDate);
       });
-
-      console.log(finalArray);
     });
 
-  return "123";
+  return finalArray;
 };
 
 export { getWeatherByPoint };
