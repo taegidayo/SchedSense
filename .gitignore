@@ -12,6 +12,6 @@ web-build/
 .env
 # macOS
 .DS_Store
-test
-test2
-test3
+test.*
+test2.*
+test3.*
