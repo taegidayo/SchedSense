@@ -76,7 +76,6 @@ const Layout = () => {
     <Tabs>
       <Tabs.Screen name="index" options={{}}></Tabs.Screen>
       <Tabs.Screen name="calendar"></Tabs.Screen>
-      <Tabs.Screen name="test"></Tabs.Screen>
     </Tabs>
 
     // <Stack initialRouteName="home">

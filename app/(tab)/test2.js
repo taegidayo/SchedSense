@@ -13,10 +13,11 @@ import {
 import { router } from "expo-router";
 import { insertWeatherData } from "../../db";
 import uploadDbFile from "../../db/test";
+import { getWeatherByPoint } from "../../utils";
 
 export default function App() {
   useEffect(() => {
-    insertWeatherData();
+    // insertWeatherData();
   }, []);
 
   const handleDateClick = async (selectedDate) => {
@@ -33,7 +34,12 @@ export default function App() {
   return (
     <View style={{ flex: 1 }}>
       <View style={{ backgroundColor: "#FF00FF" }}></View>
-      <TouchableOpacity onPress={uploadDbFile}>
+      <TouchableOpacity
+        onPress={() => {
+          //   uploadDbFile();
+          getWeatherByPoint(61, 110);
+        }}
+      >
         <Text>버튼... 누르면 db송출</Text>
       </TouchableOpacity>
     </View>

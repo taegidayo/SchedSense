@@ -30,10 +30,10 @@ const Test = () => {
   };
   const a = async () => {
     if (Object.keys(location).length !== 0) {
+      console.log(location.X, location.Y);
       // setWeather(await getWeatherByPoint(location.X, location.Y));
-      setWeather(await getWeatherByPoint(location.X, location.Y));
       setIsLoaded(true);
-      console.log(weather[0]);
+      // console.log(weather[0]);
     }
   };
 

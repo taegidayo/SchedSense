@@ -1,3 +1,3 @@
-import { insertWeatherData } from "./weathers";
+import { insertWeatherData, checkWeatherData } from "./weathers";
 
-export { insertWeatherData };
+export { checkWeatherData, insertWeatherData };
