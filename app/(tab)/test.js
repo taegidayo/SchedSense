@@ -6,7 +6,7 @@ import {
   StyleSheet,
   FlatList,
 } from "react-native";
-import { getWeatherByPoint, getLocation } from "../../function";
+import { getWeatherByPoint, getLocation } from "../../utils";
 import { useEffect, useState } from "react";
 import * as Location from "expo-location";
 const Test = () => {

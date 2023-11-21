@@ -5,26 +5,36 @@ import Papa from "papaparse";
 /**
  *
  * @param {string} csvData csv파일에서 읽어온 string값
+ *
  * @returns {JSON} csv데이터를 json으로 변환한 값을 반환
  */
 const convertCSVToJSON = (csvData) => {
   return new Promise((resolve, reject) => {
     Papa.parse(csvData, {
       header: true,
-      complete: function (results) {
+      complete: (results) => {
         resolve(results.data);
       },
-      error: function (error) {
+      error: (error) => {
         reject(error);
       },
     });
   });
 };
 
-function haversineDistance(coords1, coords2) {
-  function toRad(x) {
+/**
+ *
+ * @param {{long:number,lat:number}} coords1  lat:X축 좌표, long:Y축 좌표
+ * @param {{long:number,lat,number}} coords2  lat:X축 좌표, long:Y축 좌표
+ *
+ * @description 두 좌표사이의 거리를 km로 변환하여 거리를 측정하는 코드
+ *
+ * @returns 좌표사이의 거리를 반환
+ */
+const haversineDistance = (coords1, coords2) => {
+  const toRad = (x) => {
     return (x * Math.PI) / 180;
-  }
+  };
 
   var lon1 = coords1.long;
   var lat1 = coords1.lat;
@@ -48,9 +58,14 @@ function haversineDistance(coords1, coords2) {
   var d = R * c;
 
   return d;
-}
+};
 
-function findClosestLocation(targetCoords, locations) {
+/**
+ * @param {{lat:number,long:number}} targetCoords
+ * @param {coords} locations 단기예보 csv파일에서 가져온 데이터 리스트,
+ * @returns
+ */
+const findClosestLocation = (targetCoords, locations) => {
   let closest = null;
   let closestDistance = Infinity;
 
@@ -70,7 +85,7 @@ function findClosestLocation(targetCoords, locations) {
   });
 
   return closest;
-}
+};
 
 /**
  *
@@ -79,15 +94,13 @@ function findClosestLocation(targetCoords, locations) {
  * @param {string} level3
  * @param {{lat:number,long:number}}
  *
- * 함수 로직:
- *
  *
  * @returns {{X:number,Y:number}} 기상청에서 제공한 "기상청41_단기예보 조회서비스_오픈API활용가이드_격자_위경도(20230611)파일에서 있는 격자X,격자Y값을 기반으로 함."
  */
 const getLocation = async (level1, level2, level3, point) => {
   const csvData = await fetch(
     "https://sched-sense-server.vercel.app/location.csv"
-  ).then((response) => response.text());
+  ).then((response) => response.text()); //내부 로케이션의 csv파일을 읽어오는 데 어려움이 있어 vercel에 업로드 해둠.
   const jsonData = await convertCSVToJSON(csvData);
 
   var data = jsonData.filter(
