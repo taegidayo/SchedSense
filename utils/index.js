@@ -1,3 +1,9 @@
 import { getBaseTime, getWeatherByPoint } from "./weather";
 import { getLocation } from "./location";
-export { getBaseTime, getWeatherByPoint, getLocation };
+import { getSecondsUntilTargetTime } from "./getAlarm";
+export {
+  getBaseTime,
+  getWeatherByPoint,
+  getLocation,
+  getSecondsUntilTargetTime,
+};

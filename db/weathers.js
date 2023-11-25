@@ -9,40 +9,40 @@ import * as SQLite from "expo-sqlite";
  *
  *
  */
-const insertWeatherData = async (weatherData) => {
+const insertWeatherData = async (weatherData, x, y) => {
   try {
     const db = SQLite.openDatabase("db.db");
 
     db.transaction((tx) => {
       tx.executeSql(
         `CREATE TABLE IF NOT EXISTS weather (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        PCP TEXT,
-        POP INTEGER,
-        PTY INTERGER,
-        REH INTERGER,
-        SKY INTERGER,
-        SNO TEXT,
-        TMP INTERGER,
-        UUU INTERGER,
-        VEC TEXT,
-        VVV TEXT,
-        WAV TEXT,
-        WSD TEXT,
-        baseDate TEXT,
-        baseTime TEXT,
-        fcstDate TEXT,
-        fcstTime TEXT
-      );`
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          LOC_X INTEGER,
+          LOC_Y INTEGER,
+          PCP TEXT,
+          POP TEXT,
+          PTY TEXT,
+          REH TEXT,
+          SKY TEXT,
+          SNO TEXT,
+          TMP TEXT,
+          UUU TEXT,
+          VEC TEXT,
+          VVV TEXT,
+          WAV TEXT,
+          WSD TEXT,
+          baseDate TEXT,
+          baseTime TEXT,
+          fcstDate TEXT,
+          fcstTime TEXT
+        );`
       );
 
       db.transaction((tx) => {
         tx.executeSql(
           "DELETE FROM weather;",
           [],
-          () => {
-            console.log("All data deleted from 'weather' table.");
-          },
+          () => {},
           (_, error) => {
             console.log("Delete Error: ", error);
           }
@@ -52,10 +52,26 @@ const insertWeatherData = async (weatherData) => {
       db.transaction(
         (tx) => {
           weatherData.forEach((data) => {
+            data.fcstTime = parseInt(data.fcstTime.slice(0, 2));
+
+            if (data.fcstTime > 12) {
+              data.fcstTime = `오후 ${(data.fcstTime - 12)
+                .toString()
+                .padStart(2, "0")}시`;
+            } else if (data.fcstTime == 12) {
+              data.fcstTime = `오후 12시`;
+            } else {
+              data.fcstTime = `오전 ${data.fcstTime
+                .toString()
+                .padStart(2, "0")}시`;
+            }
+
             tx.executeSql(
-              `INSERT INTO weather (PCP, POP, PTY, REH, SKY, SNO, TMP, UUU, VEC, VVV, WAV, WSD, baseDate, baseTime, fcstDate, fcstTime) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              `INSERT INTO weather (LOC_X,LOC_Y,PCP, POP, PTY, REH, SKY, SNO, TMP, UUU, VEC, VVV, WAV, WSD, baseDate, baseTime, fcstDate, fcstTime)
+              VALUES (?,?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
               [
+                x,
+                y,
                 data.PCP,
                 parseInt(data.POP),
                 parseInt(data.PTY),
@@ -76,26 +92,9 @@ const insertWeatherData = async (weatherData) => {
             );
           });
         },
-        (error) => {
-          console.log("Transaction Error: ", error);
-        },
-        () => {
-          console.log("Transaction Success");
-        }
+        (error) => {},
+        () => {}
       );
-
-      db.transaction((tx) => {
-        tx.executeSql(
-          "SELECT * FROM weather;",
-          [],
-          (_, { rows }) => {
-            // console.log(JSON.stringify(rows));
-          },
-          (_, error) => {
-            console.log("Query Error: ", error);
-          }
-        );
-      });
     });
   } catch (error) {
     console.log(err);
@@ -112,29 +111,26 @@ const insertWeatherData = async (weatherData) => {
  *
  *
  */
-const checkWeatherData = async (baseDate, baseTime) => {
+const checkWeatherData = async (x, y, baseDate, baseTime) => {
   const db = SQLite.openDatabase("db.db");
-
-  var isLatest = false;
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
-        `SELECT * FROM weather WHERE baseDate = ? AND baseTime = ?;`,
-        [baseDate, baseTime],
+        `SELECT * FROM weather WHERE loc_x = ? AND loc_y = ? AND baseDate = ? AND baseTime = ?;`,
+        [x, y, baseDate, baseTime],
         (_, result) => {
-          console.log(1);
-          if (result.rows.length > 0) {
-            // baseDate와 baseTime이 일치하는 레코드가 존재합니다.
-            console.log(1);
-            resolve(true);
-          } else {
-            console.log(2);
-            // 일치하는 레코드가 없습니다.
-            resolve(false);
+          let data = [];
+          for (let i = 0; i < result.rows.length; i++) {
+            data.push(result.rows.item(i));
           }
+          resolve(data); // 반환할 데이터
+          // }
+          //  else {
+          // 일치하는 레코드가 없습니다.
+          // resolve(false);
+          // }
         },
         (_, error) => {
-          console.log(error);
           // 쿼리 실행 중 오류 발생
           reject(error);
         }
@@ -143,4 +139,27 @@ const checkWeatherData = async (baseDate, baseTime) => {
   });
 };
 
-export { insertWeatherData, checkWeatherData };
+const selectWeatherData = async () => {
+  const db = SQLite.openDatabase("db.db");
+  return new Promise((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        `SELECT * FROM weather ;`,
+        [],
+        (_, result) => {
+          let data = [];
+          for (let i = 0; i < result.rows.length; i++) {
+            data.push(result.rows.item(i));
+          }
+          resolve(data); // 반환할 데이터
+        },
+        (_, error) => {
+          // 쿼리 실행 중 오류 발생
+          reject(error);
+        }
+      );
+    });
+  });
+};
+
+export { insertWeatherData, checkWeatherData, selectWeatherData };

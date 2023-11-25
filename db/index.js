@@ -1,3 +1,7 @@
-import { insertWeatherData, checkWeatherData } from "./weathers";
+import {
+  insertWeatherData,
+  checkWeatherData,
+  selectWeatherData,
+} from "./weathers";
 
-export { checkWeatherData, insertWeatherData };
+export { checkWeatherData, insertWeatherData, selectWeatherData };

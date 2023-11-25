@@ -9,6 +9,8 @@ import {
 import { getWeatherByPoint, getLocation } from "../../utils";
 import { useEffect, useState } from "react";
 import * as Location from "expo-location";
+import { selectWeatherData } from "../../db";
+import { WeatherListView } from "../../component";
 const Test = () => {
   const [point, setPoint] = useState({});
   const [weather, setWeather] = useState([]);
@@ -30,8 +32,9 @@ const Test = () => {
   };
   const a = async () => {
     if (Object.keys(location).length !== 0) {
-      console.log(location.X, location.Y);
-      // setWeather(await getWeatherByPoint(location.X, location.Y));
+      // var data = await selectWeatherData();
+      // console.log(data[0]);
+      setWeather(await selectWeatherData());
       setIsLoaded(true);
       // console.log(weather[0]);
     }
@@ -70,20 +73,7 @@ const Test = () => {
   return (
     <View style={styles.container}>
       {isLoaded ? (
-        <FlatList
-          data={weather}
-          horizontal={true}
-          renderItem={({ item }) => {
-            return (
-              <View style={styles.item}>
-                <Text>
-                  {item.fcstTime}: {item.POP}
-                </Text>
-              </View>
-            );
-          }}
-          keyExtractor={(item, index) => index.toString()}
-        />
+        <WeatherListView weatherData={weather} />
       ) : (
         <ActivityIndicator size="large" color="#0000ff" />
       )}
