@@ -97,8 +97,9 @@ async function registerForPushNotificationsAsync(sound) {
     await Notifications.setNotificationChannelAsync("default", {
       sound: "alarm.wav",
       name: "default",
-      importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern: [0, 250, 250, 250],
+      // importance: Notifications.AndroidImportance.MAX,
+      // vibrationPattern: [0, 250, 250, 250],
+      lockscreenVisibility: true,
       lightColor: "#FF231F7C",
     });
   }

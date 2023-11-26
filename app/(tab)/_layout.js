@@ -50,65 +50,23 @@ async function scheduleAlarm() {
   });
 }
 
-const useNotificationObserver = async () => {
-  // useEffect(async () => {
-  //   const { status } = await Notifications.requestPermissionsAsync();
-  //   if (status !== "granted") {
-  //     alert("알림 권한이 거부되었습니다!");
-  //     return;
-  //   }
-  //   const token = (await Notifications.getExpoPushTokenAsync()).data;
-  //   let isMounted = true;
-  //   function redirect(notification) {
-  //     const url = notification.request.content.data?.url;
-  //     if (url) {
-  //       router.push(url);
-  //     }
-  //   }
-  //   Notifications.getLastNotificationResponseAsync().then((response) => {
-  //     if (!isMounted || !response?.notification) {
-  //       return;
-  //     }
-  //     redirect(response?.notification);
-  //   });
-  //   const subscription = Notifications.addNotificationResponseReceivedListener(
-  //     (response) => {
-  //       redirect(response.notification);
-  //     }
-  //   );
-  //   Notifications.scheduleNotificationAsync({
-  //     content: {
-  //       title: "You've got mail! 📬",
-  //       body: "Here is the notification body",
-  //       data: { data: "goes here" },
-  //     },
-  //     trigger: { seconds: 2 },
-  //   });
-  //   return () => {
-  //     isMounted = false;
-  //     subscription.remove();
-  //   };
-  // }, []);
-};
-
 const Layout = () => {
   // scheduleAlarm();
 
-  TaskManager.defineTask(TASK_NAME, () => {
-    try {
-      // 여기에 실행할 코드
+  // TaskManager.defineTask(TASK_NAME, () => {
+  //   try {
+  //     // 여기에 실행할 코드
 
-      console.log("백그라운드 작업 실행");
-      return BackgroundFetch.Result.NewData;
-    } catch (err) {
-      return BackgroundFetch.Result.Failed;
-    }
-  });
-  registerBackgroundTask();
+  //     console.log("백그라운드 작업 실행");
+  //     return BackgroundFetch.Result.NewData;
+  //   } catch (err) {
+  //     return BackgroundFetch.Result.Failed;
+  //   }
+  // });
+  // registerBackgroundTask();
   getLocationPermission();
 
   if (Platform.OS == "android") {
-    useNotificationObserver();
   }
   //   const [fontLoaded] = useFonts({
   // DMBold: require("../assets/fonts/DMSans-Bold.ttf"),

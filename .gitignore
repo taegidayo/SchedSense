@@ -12,7 +12,7 @@ web-build/
 .env
 # macOS
 .DS_Store
-test.*
+test*.*
 test2.*
 test3.*
 dev.js
