@@ -5,7 +5,7 @@ import { Platform } from "react-native";
 import * as Location from "expo-location";
 import * as BackgroundFetch from "expo-background-fetch";
 import * as TaskManager from "expo-task-manager";
-import { getSecondsUntilTargetTime } from "../../utils";
+import { getSecondsUntilTargetTime } from "../utils";
 
 export const unstable_settings = {
   initialRouteName: "index",
@@ -23,6 +23,7 @@ const TASK_NAME = "BACKGROUND_TASK";
 
 const define = () => {};
 
+var userInfo = null;
 const registerBackgroundTask = async () => {
   try {
     await BackgroundFetch.registerTaskAsync(TASK_NAME, {
@@ -49,8 +50,34 @@ async function scheduleAlarm() {
     },
   });
 }
+// Google 로그인 처리하는 함수
+const handleSignInWithGoogle = async () => {
+  const user = await AsyncStorage.getItem("@user");
+  if (!user) {
+    if (response?.type === "success") {
+      // 인증 요청에 대한 응답이 성공이면, 토큰을 이용하여 유저 정보를 가져옴.
+      await getUserInfo(response.authentication?.accessToken);
+    }
+  } else {
+    // 유저 정보가 이미 있으면, 유저 정보를 가져옴.
+    userInfo = JSON.parse(user);
+  }
+};
 
 const Layout = () => {
+  // scheduleAlarm();
+
+  // TaskManager.defineTask(TASK_NAME, () => {
+  //   try {
+  //     // 여기에 실행할 코드
+
+  //     console.log("백그라운드 작업 실행");
+  //     return BackgroundFetch.Result.NewData;
+  //   } catch (err) {
+  //     return BackgroundFetch.Result.Failed;
+  //   }
+  // });
+  // registerBackgroundTask();
   getLocationPermission();
 
   if (Platform.OS == "android") {
@@ -65,28 +92,25 @@ const Layout = () => {
   //   }
 
   return (
-    <Tabs>
-      <Tabs.Screen
-        name="index"
+    <Stack initialRouteName="home">
+      <Stack.Screen
+        name="AddScreen"
         options={{
-          headerTitle: "메인",
-          headerRight: () => {},
+          presentation: "modal",
+          headerShown: true,
         }}
-      ></Tabs.Screen>
-      <Tabs.Screen name="calendar"></Tabs.Screen>
-    </Tabs>
+      />
 
-    // <Stack initialRouteName="home">
-    //   <Stack.Screen
-    //     name="index"
-    //     options={{
-    //       presentation: "modal",
-    //       headerShown: true,
-    //     }}
-    //   />
-
-    //   <Stack.Screen name="calendar" options={{ title: "경기계획" }} />
-    // </Stack>
+      <Stack.Screen name="EditScreen" options={{ title: "경기계획" }} />
+      <Stack.Screen
+        name="(tab)"
+        options={{
+          presentation: "modal",
+          headerTitle: "Modal",
+          headerShown: false,
+        }}
+      />
+    </Stack>
   );
 };
 
