@@ -45,6 +45,9 @@ const styles = StyleSheet.create({
   dateAndTime: {
     alignItems: "center",
   },
+  notice: {
+    color: "red",
+  },
 });
 
 export default styles;

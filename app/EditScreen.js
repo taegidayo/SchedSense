@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -10,11 +10,20 @@ import {
   Alert,
 } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { useGlobalSearchParams } from "expo-router";
+import { router, useGlobalSearchParams, useSegments } from "expo-router";
+import { getScheduleDataByID } from "../db";
 
 const EditScreen = () => {
   const param = useGlobalSearchParams();
-  const { event, updateEvent, deleteEvent } = param;
+  // const { event, updateEvent, deleteEvent } = param;
+
+  const [event, setEvent] = useState({
+    text: "asd",
+    allDay: true,
+    startDate: "2023-11-29",
+    endDate: "2023-11-29",
+  });
+  const segments = useSegments();
 
   const [eventText, setEventText] = useState(event.text);
   const [isAllDay, setIsAllDay] = useState(event.allDay);
@@ -23,17 +32,32 @@ const EditScreen = () => {
   const [startDate, setStartDate] = useState(new Date(event.startDate));
   const [endDate, setEndDate] = useState(new Date(event.endDate));
   const [startTime, setStartTime] = useState(
-    event.startTime ? new Date(event.startTime) : new Date()
+    event.startTime ? event.startTime : null
   );
-  const [endTime, setEndTime] = useState(
-    event.endTime ? new Date(event.endTime) : new Date()
-  );
+  const [endTime, setEndTime] = useState(event.endTime ? event.endTime : null);
 
   // 날짜 및 시간 선택기 표시 상태
   const [isStartDatePicker, setStartDatePicker] = useState(false);
   const [isEndDatePicker, setEndDatePicker] = useState(false);
   const [isStartTimePicker, setStartTimePicker] = useState(false);
   const [isEndTimePicker, setEndTimePicker] = useState(false);
+
+  const getData = async () => {
+    const data = await getScheduleDataByID(param.id);
+    console.log(data[0]);
+
+    console.log(data[0].endTime);
+    setEvent(data[0]);
+    setEventText(data[0].text);
+    setIsAllDay(data[0].setIsAllDay);
+    setStartDate(new Date(data[0].startDate));
+    setEndDate(new Date(data[0].endDate));
+    setStartTime(data[0].startTime ? data[0].startTime : new Date());
+    setEndTime(data[0].endTime ? data[0].endTime : new Date());
+  };
+  useEffect(() => {
+    getData();
+  }, [segments]);
 
   const toggleSwitch = () => setIsAllDay((previousState) => !previousState);
 
@@ -75,12 +99,8 @@ const EditScreen = () => {
     const timeOptions = { hour: "2-digit", minute: "2-digit" };
 
     // 하루 종일 이벤트가 아닌 경우에만 시간 설정
-    const finalStartTime = isAllDay
-      ? null
-      : startTime.toLocaleTimeString("ko-KR", timeOptions);
-    const finalEndTime = isAllDay
-      ? null
-      : endTime.toLocaleTimeString("ko-KR", timeOptions);
+    const finalStartTime = isAllDay ? null : startTime;
+    const finalEndTime = isAllDay ? null : endTime;
 
     const updateEvent = {
       text: eventText,
@@ -96,7 +116,8 @@ const EditScreen = () => {
     //   route.params.addScreen(updateEvent);
     // }
     console.log("수정 후 이벤트:", event);
-    navigation.goBack();
+
+    router.back();
   };
 
   const handleDelete = () => {
@@ -160,12 +181,7 @@ const EditScreen = () => {
               style={styles.timePickerButton}
               onPress={() => setStartTimePicker(true)}
             >
-              <Text style={styles.timeText}>
-                {startTime.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </Text>
+              <Text style={styles.timeText}>{startTime}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -193,12 +209,7 @@ const EditScreen = () => {
               style={styles.timePickerButton}
               onPress={() => setEndTimePicker(true)}
             >
-              <Text style={styles.timeText}>
-                {endTime.toLocaleTimeString("ko-KR", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </Text>
+              <Text style={styles.timeText}>{endTime}</Text>
             </TouchableOpacity>
           )}
         </View>

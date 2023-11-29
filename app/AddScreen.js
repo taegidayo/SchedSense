@@ -27,6 +27,7 @@ import {
 } from "firebase/firestore/lite";
 import { db } from "../config/firebaseConfig";
 import { insertScheduleData } from "../db";
+import { Picker } from "@react-native-picker/picker";
 
 const AddScreen = ({}) => {
   const segments = useSegments();
@@ -45,6 +46,8 @@ const AddScreen = ({}) => {
   const [address, setAddress] = useState("");
   const [point, setPoint] = useState({});
   const [geoTime, setGeoTime] = useState(0);
+  const [alarmTime, setAlarmTime] = useState(0);
+  const [selectedValue, setSelectedValue] = useState("분");
 
   const toggleAlldaySwitch = () =>
     setIsAllDay((previousState) => !previousState);
@@ -79,19 +82,6 @@ const AddScreen = ({}) => {
   // 사용자가 저장 버튼을 누르는 등의 저장 동작을 수행하는 함수
   const handleSaveEvent = async () => {
     console.log(address);
-    if (isGeoAlarm && address == undefined) {
-      return Alert.alert(
-        "안내",
-        `위치 기반 알림을 받기 위해서는 위치 지정이 필요합니다`,
-        [
-          {
-            text: "아니오",
-            onPress: () => console.log("아니오 선택됨"),
-            style: "cancel",
-          },
-        ]
-      );
-    }
 
     // 현지 시간대를 고려하여 날짜를 'YYYY-MM-DD' 형식의 문자열로 변환하는 함수
     const formatDate = (date) => {
@@ -129,7 +119,15 @@ const AddScreen = ({}) => {
     insertScheduleData(newEvent);
 
     await setDoc(doc(db, "user", "ss", "ss", "Ss"), newEvent);
-    router.push({ pathname: "/test4", params: { update: true } });
+    router.push({ pathname: "/", params: { update: true } });
+  };
+
+  const checkData = () => {
+    if (eventText.length == 0) {
+      return true;
+    } else if (isGeoAlarm && address == undefined) {
+      return true;
+    } else return false;
   };
 
   return (
@@ -271,6 +269,7 @@ const AddScreen = ({}) => {
         onPress={() => {
           router.replace(`/test5`);
         }}
+        disabled={!isGeoAlarm}
       />
 
       <View>
@@ -288,12 +287,44 @@ const AddScreen = ({}) => {
           />
           <Text>분 전 도착</Text>
         </View>
-      ) : null}
+      ) : null
+      // <View style={styles.section}>
+      //   <Text>알림시간 설정: 일정시작</Text>
+      //   <TextInput
+      //     keyboardType="number-pad"
+      //     value={alarmTime}
+      //     onChangeText={setAlarmTime}
+      //     style={styles.input}
+      //   />
+      //   <Picker
+      //     style={{ width: 100 }}
+      //     selectedValue={selectedValue}
+      //     onValueChange={(itemValue, itemIndex) =>
+      //       setSelectedValue(itemValue)
+      //     }
+      //   >
+      //     <Picker.Item label="분" value="분" />
+      //     <Picker.Item label="시간" value="시간" />
+      //     <Picker.Item label="일" value="일" />
+      //   </Picker>
+
+      //   <Text>전</Text>
+      // </View>
+      }
 
       {/* 저장 버튼 */}
       <View style={{ marginTop: 10 }}>
-        <Button title="저장" onPress={handleSaveEvent} />
+        <Button title="저장" onPress={handleSaveEvent} disabled={checkData()} />
       </View>
+
+      {checkData() ? (
+        <View>
+          <Text style={styles.notice}>제목을 입력해야 합니다.</Text>
+          <Text style={styles.notice}>
+            또한, 위치기반 알림을 받기 위해서는 위치지정을 해야합니다.
+          </Text>
+        </View>
+      ) : null}
     </View>
   );
 };

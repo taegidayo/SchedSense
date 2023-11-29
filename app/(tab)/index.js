@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -18,10 +18,12 @@ import {
   router,
   useGlobalSearchParams,
   usePathname,
+  useSegments,
 } from "expo-router";
 
 import { plusButton, checkButton, calendarIcon, menuIcon } from "../../assets";
 import { Calender } from "../../component";
+import { getScheduleData, insertScheduleData } from "../../db";
 
 const Home = () => {
   // 현재 날짜를 한국 시간대(KST)를 기준으로 설정하는 함수
@@ -33,78 +35,51 @@ const Home = () => {
     return kstDate.toISOString().split("T")[0];
   };
 
-  const [selectedDate, setSelectedDate] = useState(new Date().toString());
+  const [selectedDate, setSelectedDate] = useState(formatDate(new Date()));
   const [modalVisible, setModalVisible] = useState(false);
   const [text, setText] = useState("");
-  const [events, setEvents] = useState({});
+  const [events, setEvents] = useState([]);
 
-  LocaleConfig.locales["kr"] = {
-    monthNames: [
-      "1월",
-      "2월",
-      "3월",
-      "4월",
-      "5월",
-      "6월",
-      "7월",
-      "8월",
-      "9월",
-      "10월",
-      "11월",
-      "12월",
-    ],
-    monthNamesShort: [
-      "1월",
-      "2월",
-      "3월",
-      "4월",
-      "5월",
-      "6월",
-      "7월",
-      "8월",
-      "9월",
-      "10월",
-      "11월",
-      "12월",
-    ],
-    dayNames: [
-      "일요일",
-      "월요일",
-      "화요일",
-      "수요일",
-      "목요일",
-      "금요일",
-      "토요일",
-    ],
-    dayNamesShort: ["일", "월", "화", "수", "목", "금", "토"],
-    today: "오늘",
-  };
-  LocaleConfig.defaultLocale = "kr";
+  function formatDate(date) {
+    var d = new Date(date),
+      month = "" + (d.getMonth() + 1),
+      day = "" + d.getDate(),
+      year = d.getFullYear();
 
-  const onDayPress = (day) => {
-    setSelectedDate(day.dateString);
+    if (month.length < 2) month = "0" + month;
+    if (day.length < 2) day = "0" + day;
+
+    return [year, month, day].join("-");
+  }
+
+  const segments = useSegments();
+
+  const scheduleUpdate = async () => {
+    setEvents(await getScheduleData());
   };
+  useEffect(() => {
+    scheduleUpdate();
+  }, [segments]);
 
   // 확인 버튼을 눌렀을 때 실행할 함수
-  const handleConfirmPress = () => {
-    setEvents((prevEvents) => {
-      const newEvents = { ...prevEvents };
-      // 해당 날짜에 이벤트 배열이 없다면 새 배열 생성
-      if (!newEvents[selectedDate]) {
-        newEvents[selectedDate] = [];
-      }
-      // 새 이벤트 객체를 생성하여 해당 날짜의 배열에 추가
-      const newEvent = {
-        text: text, // 사용자가 입력한 텍스트
-        startDate: selectedDate, // 선택된 날짜
-        endDate: selectedDate, // 종료 날짜도 선택된 날짜로 설정 (하루 종일 이벤트)
-        startTime: null, // 하루 종일 이벤트이므로 시간은 null
-        endTime: null, // 하루 종일 이벤트이므로 시간은 null
-        allDay: true, // 하루 종일 이벤트 플래그
-      };
-      newEvents[selectedDate].push(newEvent);
-      return newEvents;
-    });
+  const handleConfirmPress = async () => {
+    const newEvent = {
+      text: text, // 사용자가 입력한 텍스트
+      startDate: selectedDate, // 선택된 날짜
+      endDate: selectedDate, // 종료 날짜도 선택된 날짜로 설정 (하루 종일 이벤트)
+      startTime: null, // 하루 종일 이벤트이므로 시간은 null
+      endTime: null, // 하루 종일 이벤트이므로 시간은 null
+      allDay: true, // 하루 종일 이벤트 플래그
+    };
+    await insertScheduleData(newEvent);
+
+    // 해당 날짜에 이벤트 배열이 없다면 새 배열 생성
+
+    // 새 이벤트 객체를 생성하여 해당 날짜의 배열에 추가
+    setTimeout(() => {
+      scheduleUpdate();
+    }, 1000);
+
     setText(""); // 텍스트 입력 필드 초기화
     setModalVisible(false); // 모달 닫기
   };
@@ -156,9 +131,10 @@ const Home = () => {
 
   // 이벤트 수정을 위해 EditScreen으로 이동하는 함수
   const editEvent = (selectedEvent) => {
-    router.push(
-      `/EditScreen?event=${selectedEvent}&updateEvent=${updateEvent}&deleteEvent=${deleteEvent}`
+    console.log(
+      `/EditScreen?id=${selectedEvent.id}&updateEvent=${updateEvent}&deleteEvent=${deleteEvent}`
     );
+    router.push(`/EditScreen?id=${selectedEvent.id}`);
 
     // navigation.navigate("EditScreen", {
     //   event: selectedEvent,
@@ -205,26 +181,25 @@ const Home = () => {
     });
   };
 
-  const openDrawer = () => {
-    navigation.toggleDrawer();
-  };
-
-  const dateClick = (date) => {
-    setSelectedDate(date);
-  };
-
   return (
     <View style={styles.container}>
       <Calender
+        events={events}
         onDateClick={(i) => {
-          setSelectedDate(i.toString());
+          setSelectedDate(formatDate(i));
+          console.log(
+            events.filter((item) => {
+              return item.startDate == selectedDate;
+            })
+          );
         }}
       />
-      <Text>{selectedDate}</Text>
 
       {/* <ScrollView style={styles.eventContainer}> */}
       <FlatList
-        data={events[selectedDate]}
+        data={events.filter((item) => {
+          return item.startDate == selectedDate;
+        })}
         renderItem={renderItem}
         keyExtractor={(item, index) => index.toString()}
         style={styles.eventList}

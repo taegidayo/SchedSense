@@ -19,13 +19,28 @@ import {
 } from "date-fns";
 import { db } from "../../config/firebaseConfig";
 
-const Calender = ({ onDateClick }) => {
+const Calender = ({ onDateClick, events }) => {
   const day = ["일", "월", "화", "수", "목", "금", "토"];
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isDragging, setIsDragging] = useState(false);
   const [showOnlyCurrentWeek, setShowOnlyCurrentWeek] = useState(false);
   const stateRef = useRef();
+  const [uniqueStartDatesArray, setUniqueStartDatesArray] = useState([]);
+
+  // 객체를 사용하여 중복을 체크
+  useEffect(() => {
+    const uniqueStartDates = {};
+
+    // jsonArray를 순회하며 startDate가 객체에 없으면 추가
+    events.forEach((item) => {
+      uniqueStartDates[item.startDate] = true;
+    });
+
+    // 객체의 키들을 배열로 변환
+    setUniqueStartDatesArray(Object.keys(uniqueStartDates));
+    console.log(Object.keys(uniqueStartDates));
+  }, []);
 
   const selectedDateRef = useRef(selectedDate);
 
@@ -41,6 +56,18 @@ const Calender = ({ onDateClick }) => {
     selectedDateRef.current = selectedDate;
   }, [selectedDate]);
 
+  function formatDate(date) {
+    var d = new Date(date),
+      month = "" + (d.getMonth() + 1),
+      day = "" + d.getDate(),
+      year = d.getFullYear();
+
+    if (month.length < 2) month = "0" + month;
+    if (day.length < 2) day = "0" + day;
+
+    return [year, month, day].join("-");
+  }
+
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -55,7 +82,6 @@ const Calender = ({ onDateClick }) => {
         setIsDragging(false);
       },
       onPanResponderEnd: (evt, gestureState) => {
-
         if (gestureState.dx < -50) {
           if (stateRef.current) {
             setCurrentDate((prev) => addWeeks(prev, 1));
@@ -120,6 +146,10 @@ const Calender = ({ onDateClick }) => {
                 dateItem.getMonth() !== currentDate.getMonth();
 
               const handleDatePress = (date) => {
+                console.log(
+                  uniqueStartDatesArray.indexOf(format(date, "yyyy-MM-dd"))
+                );
+                console.log(format(date, "yyyy-MM-dd"));
                 setSelectedDate(date);
                 onDateClick(date);
                 setCurrentDate(date);
@@ -135,7 +165,16 @@ const Calender = ({ onDateClick }) => {
                   }}
                   style={[styles.day, isOverflown ? styles.overflownDay : null]}
                 >
-                  <Text style={isSelected ? styles.selectedText : null}>
+                  <Text
+                    style={[
+                      isSelected ? styles.selectedText : null,
+                      uniqueStartDatesArray.indexOf(
+                        format(dateItem, "yyyy-MM-dd")
+                      ) >= 0
+                        ? { color: "blue" }
+                        : null,
+                    ]}
+                  >
                     {dateItem.getDate()}
                   </Text>
                 </TouchableOpacity>

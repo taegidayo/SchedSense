@@ -72,13 +72,43 @@ const insertScheduleData = async (data) => {
  *
  *
  */
-const getScheduleData = async (x, y, baseDate, baseTime) => {
+const getScheduleData = async () => {
   const db = SQLite.openDatabase("db.db");
+
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
-        `SELECT * FROM weather WHERE loc_x = ? AND loc_y = ? AND baseDate = ? AND baseTime = ?;`,
-        [x, y, baseDate, baseTime],
+        `SELECT * FROM schedule;`,
+        [],
+        (_, result) => {
+          let data = [];
+          for (let i = 0; i < result.rows.length; i++) {
+            data.push(result.rows.item(i));
+          }
+          resolve(data); // 반환할 데이터
+          // }
+          //  else {
+          // 일치하는 레코드가 없습니다.
+          // resolve(false);
+          // }
+        },
+        (_, error) => {
+          // 쿼리 실행 중 오류 발생
+          reject(error);
+        }
+      );
+    });
+  });
+};
+
+const getScheduleDataByID = async (id) => {
+  const db = SQLite.openDatabase("db.db");
+
+  return new Promise((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        `SELECT * FROM schedule WHERE ID= ?;`,
+        [id],
         (_, result) => {
           let data = [];
           for (let i = 0; i < result.rows.length; i++) {
@@ -123,4 +153,4 @@ const selectWeatherData = async () => {
   });
 };
 
-export { insertScheduleData, selectWeatherData };
+export { insertScheduleData, getScheduleData, getScheduleDataByID };
