@@ -66,9 +66,10 @@ const getWeatherByPoint = async (x, y) => {
   var url = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=${process.env.EXPO_PUBLIC_API_KEY}&pageNo=1&numOfRows=1000&dataType=json`;
 
   const { baseDate, baseTime } = getBaseTime();
-  // const data = await checkWeatherData(x, y, baseDate, baseTime);
-  // if (data.length === 0) {
-  if (true) {
+
+  const data = await checkWeatherData(x, y, baseDate, baseTime);
+  if (data.length === 0) {
+    // if (true) {
     url = url + `&base_date=${baseDate}&base_time=${baseTime}&nx=${x}&ny=${y}`;
     //todo 제거하기
 

@@ -1,5 +1,4 @@
 import { StyleSheet } from "react-native";
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -21,6 +20,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
     padding: 8,
     fontSize: 16,
+    color: "black",
   },
   datePickerButton: {
     // Style to match your design for the button
@@ -45,18 +45,6 @@ const styles = StyleSheet.create({
   dateAndTime: {
     alignItems: "center",
   },
-  typeList: {
-    flexDirection: "row",
-    flex: 0.1,
-
-    backgroundColor: "lightgreen",
-  },
-  typeButton: (selected) => ({
-    backgroundColor: selected ? "#AAA" : "#DDD",
-    flex: 0.333333,
-    justifyContent: "center",
-    alignItems: "center",
-  }),
 });
 
 export default styles;

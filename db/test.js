@@ -18,7 +18,7 @@ const uploadDbFile = async () => {
 
   console.log("DB File Path: ", dbFilePath);
 
-  const uploadUrl = "http://exp://192.168.1.7:5000/upload"; // 서버 업로드 URL
+  const uploadUrl = "http://192.168.1.7:5000/upload"; // 서버 업로드 URL
 
   let uploadResponse = await FileSystem.uploadAsync(uploadUrl, dbFilePath, {
     httpMethod: "POST",

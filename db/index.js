@@ -3,5 +3,11 @@ import {
   checkWeatherData,
   selectWeatherData,
 } from "./weathers";
+import { insertScheduleData } from "./schedule";
 
-export { checkWeatherData, insertWeatherData, selectWeatherData };
+export {
+  insertScheduleData,
+  checkWeatherData,
+  insertWeatherData,
+  selectWeatherData,
+};

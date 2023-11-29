@@ -28,6 +28,7 @@ export default function App() {
       }).start();
     }
   };
+
   const handleDateClick = (selectedDate) => {
     console.log("선택된 날짜:", selectedDate);
     // 여기서 추가 작업 수행

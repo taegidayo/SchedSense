@@ -1,41 +1,404 @@
-import { useRef, useState } from "react";
-import { Animated, Text, TouchableOpacity, View } from "react-native";
-import { PanGestureHandler, State } from "react-native-gesture-handler";
-import { Calender } from "../../component";
-import { config, db } from "../../config/firebaseConfig";
+import { useState } from "react";
 import {
-  getFirestore,
-  collection,
-  getDocs,
-  setDoc,
-  doc,
-} from "firebase/firestore/lite";
-import { router } from "expo-router";
+  View,
+  Text,
+  Modal,
+  TouchableOpacity,
+  StyleSheet,
+  TextInput,
+  FlatList,
+  ScrollView,
+  Image,
+  Button,
+} from "react-native";
+import { Calendar } from "react-native-calendars";
+import { LocaleConfig } from "react-native-calendars";
+import {
+  Navigator,
+  router,
+  useGlobalSearchParams,
+  usePathname,
+} from "expo-router";
 
-export default function App() {
-  const handleDateClick = async (selectedDate) => {
-    console.log("선택된 날짜:", selectedDate);
-    // 여기서 추가 작업 수행
-    const a = collection(db, "AA");
-    await setDoc(doc(db, "cities", "la"), {
-      name: "LA",
-      state: "CA",
-      country: "USA",
+import { plusButton, checkButton, calendarIcon, menuIcon } from "../../assets";
+import { Calender } from "../../component";
+
+const Home = () => {
+  // 현재 날짜를 한국 시간대(KST)를 기준으로 설정하는 함수
+  const getCurrentDateKST = () => {
+    const now = new Date();
+    const kstOffset = 9 * 60; // KST is UTC+9
+    const localOffset = now.getTimezoneOffset();
+    const kstDate = new Date(now.getTime() + (localOffset + kstOffset) * 60000);
+    return kstDate.toISOString().split("T")[0];
+  };
+
+  const [selectedDate, setSelectedDate] = useState(new Date().toString());
+  const [modalVisible, setModalVisible] = useState(false);
+  const [text, setText] = useState("");
+  const [events, setEvents] = useState({});
+
+  LocaleConfig.locales["kr"] = {
+    monthNames: [
+      "1월",
+      "2월",
+      "3월",
+      "4월",
+      "5월",
+      "6월",
+      "7월",
+      "8월",
+      "9월",
+      "10월",
+      "11월",
+      "12월",
+    ],
+    monthNamesShort: [
+      "1월",
+      "2월",
+      "3월",
+      "4월",
+      "5월",
+      "6월",
+      "7월",
+      "8월",
+      "9월",
+      "10월",
+      "11월",
+      "12월",
+    ],
+    dayNames: [
+      "일요일",
+      "월요일",
+      "화요일",
+      "수요일",
+      "목요일",
+      "금요일",
+      "토요일",
+    ],
+    dayNamesShort: ["일", "월", "화", "수", "목", "금", "토"],
+    today: "오늘",
+  };
+  LocaleConfig.defaultLocale = "kr";
+
+  const onDayPress = (day) => {
+    setSelectedDate(day.dateString);
+  };
+
+  // 확인 버튼을 눌렀을 때 실행할 함수
+  const handleConfirmPress = () => {
+    setEvents((prevEvents) => {
+      const newEvents = { ...prevEvents };
+      // 해당 날짜에 이벤트 배열이 없다면 새 배열 생성
+      if (!newEvents[selectedDate]) {
+        newEvents[selectedDate] = [];
+      }
+      // 새 이벤트 객체를 생성하여 해당 날짜의 배열에 추가
+      const newEvent = {
+        text: text, // 사용자가 입력한 텍스트
+        startDate: selectedDate, // 선택된 날짜
+        endDate: selectedDate, // 종료 날짜도 선택된 날짜로 설정 (하루 종일 이벤트)
+        startTime: null, // 하루 종일 이벤트이므로 시간은 null
+        endTime: null, // 하루 종일 이벤트이므로 시간은 null
+        allDay: true, // 하루 종일 이벤트 플래그
+      };
+      newEvents[selectedDate].push(newEvent);
+      return newEvents;
+    });
+    setText(""); // 텍스트 입력 필드 초기화
+    setModalVisible(false); // 모달 닫기
+  };
+
+  // 이벤트를 렌더링하기 위한 renderItem 함수
+  const renderItem = ({ item, index }) => (
+    <TouchableOpacity onPress={() => editEvent(item, selectedDate)}>
+      <View style={styles.eventItem}>
+        <Image
+          source={index === 0 ? calendarIcon : null}
+          style={{ ...styles.icon, opacity: index === 0 ? 1 : 0 }}
+        />
+        <View style={styles.eventDetails}>
+          <Text style={styles.eventText}>{item.text}</Text>
+          {!item.allDay && (
+            <Text style={styles.eventTime}>
+              {item.startTime} - {item.endTime}
+            </Text>
+          )}
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+
+  // AddEventScreen으로 이동하면서 새 이벤트를 추가하는 함수
+  const addScreen = (newEvent) => {
+    setEvents((prevEvents) => {
+      const updatedEvents = { ...prevEvents };
+      // 시작 날짜와 종료 날짜 사이의 모든 날짜를 찾아내는 로직
+      const start = new Date(newEvent.startDate);
+      const end = new Date(newEvent.endDate);
+      for (let dt = new Date(start); dt <= end; dt.setDate(dt.getDate() + 1)) {
+        const dateKey = dt.toISOString().split("T")[0];
+        if (!updatedEvents[dateKey]) {
+          updatedEvents[dateKey] = [];
+        }
+        updatedEvents[dateKey].push({
+          text: newEvent.text,
+          startDate: newEvent.startDate,
+          endDate: newEvent.endDate,
+          startTime: newEvent.startTime,
+          endTime: newEvent.endTime,
+          allDay: newEvent.isAllDay,
+        });
+      }
+      return updatedEvents;
     });
   };
 
+  // 이벤트 수정을 위해 EditScreen으로 이동하는 함수
+  const editEvent = (selectedEvent) => {
+    router.push(
+      `/EditScreen?event=${selectedEvent}&updateEvent=${updateEvent}&deleteEvent=${deleteEvent}`
+    );
+
+    // navigation.navigate("EditScreen", {
+    //   event: selectedEvent,
+    //   updateEvent: updateEvent,
+    //   deleteEvent: deleteEvent,
+    // });
+  };
+
+  // 이벤트 업데이트 함수
+  const updateEvent = (updatedEvent) => {
+    setEventText(updatedEvent.text); // eventText 값을 업데이트합니다.
+    setEvents((prevEvents) => {
+      const updatedEvents = { ...prevEvents };
+      // 시작 날짜와 종료 날짜 사이의 모든 날짜를 찾아내는 로직
+      const start = new Date(updatedEvent.startDate);
+      const end = new Date(updatedEvent.endDate);
+      for (let dt = new Date(start); dt <= end; dt.setDate(dt.getDate() + 1)) {
+        const dateKey = dt.toISOString().split("T")[0];
+        if (!updatedEvents[dateKey]) {
+          updatedEvents[dateKey] = [];
+        }
+        updatedEvents[dateKey].push({
+          text: updatedEvent.text,
+          startDate: updatedEvent.startDate,
+          endDate: updatedEvent.endDate,
+          startTime: updatedEvent.startTime,
+          endTime: updatedEvent.endTime,
+          allDay: updatedEvent.isAllDay,
+        });
+      }
+      return updatedEvents;
+    });
+  };
+
+  // 이벤트 삭제 함수
+  const deleteEvent = (eventToDelete) => {
+    setEvents((prevEvents) => {
+      const updatedEvents = { ...prevEvents };
+      const dateKey = eventToDelete.startDate; // 이벤트의 시작 날짜를 키로 사용
+      updatedEvents[dateKey] = updatedEvents[dateKey].filter(
+        (event) => event !== eventToDelete
+      );
+      return updatedEvents;
+    });
+  };
+
+  const openDrawer = () => {
+    navigation.toggleDrawer();
+  };
+
+  const dateClick = (date) => {
+    setSelectedDate(date);
+  };
+
   return (
-    <View style={{ flex: 1 }}>
-      <Calender onDateClick={handleDateClick} />
-      <View style={{ backgroundColor: "#FF00FF" }}>
+    <View style={styles.container}>
+      <Calender
+        onDateClick={(i) => {
+          setSelectedDate(i.toString());
+        }}
+      />
+      <Text>{selectedDate}</Text>
+
+      {/* <ScrollView style={styles.eventContainer}> */}
+      <FlatList
+        data={events[selectedDate]}
+        renderItem={renderItem}
+        keyExtractor={(item, index) => index.toString()}
+        style={styles.eventList}
+      />
+      {/* </ScrollView> */}
+
+      {!modalVisible && (
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.addEventButton}
+            onPress={() => setModalVisible(true)}
+          >
+            <Text style={styles.addEventText}>일정 추가</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => {
+              console.log(123);
+              router.push("/AddScreen");
+            }}
+          >
+            <Image source={plusButton} style={styles.addButtonImage} />
+          </TouchableOpacity>
+        </View>
+      )}
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(!modalVisible);
+        }}
+      >
+        <View style={styles.modalView}>
+          <TextInput
+            style={styles.input}
+            placeholder="06시 조깅"
+            onChangeText={setText} // 입력된 텍스트를 state에 저장
+            value={text} // TextInput에 표시할 값
+          />
+        </View>
         <TouchableOpacity
-          onPress={() => {
-            router.push("/calendar");
-          }}
+          style={styles.confirmButton}
+          onPress={handleConfirmPress}
         >
-          <Text>안녕sadsad</Text>
+          <Image source={checkButton} style={styles.checkButtonImage} />
         </TouchableOpacity>
-      </View>
+      </Modal>
     </View>
   );
-}
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: "#fff",
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "flex-start", // Aligns the menu button to the left
+    alignItems: "center",
+    padding: 16,
+    // If you have a statusBar, you might want to add some top padding here
+  },
+  eventContainer: {
+    flex: 1,
+  },
+  menuIcon: {
+    width: 20, // 메뉴 아이콘 크기 설정
+    height: 20, // 메뉴 아이콘 크기 설정
+  },
+  date: {
+    fontSize: 18,
+    marginBottom: 16,
+  },
+  buttonContainer: {
+    flex: 0.5,
+    bottom: 16,
+    right: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between", // 버튼들 사이에 공간을 균등하게 분배합니다.
+    width: "100%", // 부모 View의 전체 너비를 사용하도록 설정합니다.
+  },
+  addEventButton: {
+    position: "absolute",
+    bottom: 0,
+    left: 10,
+    right: 40,
+    backgroundColor: "#f2f2f2",
+    paddingVertical: 7,
+    paddingHorizontal: 20,
+    alignItems: "center",
+    justifyContent: "flex-start", // 텍스트와 이미지를 양 끝으로 정렬합니다.
+    flexDirection: "row",
+    borderRadius: 100,
+    marginHorizontal: 16,
+    marginBottom: 16,
+  },
+  addEventText: {
+    color: "rgba(0, 0, 0, 0.5)",
+    fontSize: 14,
+  },
+  addButton: {
+    position: "absolute", // 버튼을 부모 View에 대해 절대 위치로 설정합니다.
+    bottom: 16,
+    right: 10,
+    // 더 이상 marginLeft를 설정할 필요가 없습니다.
+  },
+  addButtonImage: {
+    width: 42,
+    height: 40,
+  },
+  modalView: {
+    flex: 0.5,
+    position: "absolute",
+    bottom: 0,
+    left: -10,
+    right: 40,
+    backgroundColor: "#f2f2f2",
+    paddingVertical: 7,
+    paddingHorizontal: 20,
+    alignItems: "center",
+    justifyContent: "flex-start", // 텍스트와 이미지를 양 끝으로 정렬합니다.
+    flexDirection: "row",
+    borderRadius: 100,
+    marginHorizontal: 16,
+    marginBottom: 16,
+  },
+  input: {
+    height: 40,
+    margin: 12,
+    borderWidth: 1,
+    padding: 10,
+    width: "80%", // 입력창의 너비를 조정하세요
+    color: "gray", // 텍스트 색상을 회색으로 변경
+  },
+  confirmButton: {
+    position: "absolute",
+    right: 10, // 오른쪽에 20의 여백을 두고 배치합니다.
+    top: "91%", // 상단에서 50%의 위치에 배치합니다.
+    transform: [{ translateY: -25 }], // 버튼을 Y축으로 절반만큼 올립니다.
+    // 배경색은 이미 투명으로 설정되어 있습니다.
+  },
+  checkButtonImage: {
+    width: 50, // 이미지 크기 조절
+    height: 50,
+  },
+  eventList: {
+    flex: 1,
+  },
+  icon: {
+    width: 20,
+    height: 20,
+    marginRight: 10,
+    opacity: 0, // 아이콘이 없는 항목에서는 투명하게 설정
+  },
+  eventItem: {
+    backgroundColor: "white",
+    flexDirection: "row", // 아이콘과 텍스트를 가로로 배치
+    alignItems: "center", // 세로 중앙 정렬
+    left: -20,
+    padding: 10,
+    marginVertical: 4,
+    marginHorizontal: 16,
+    borderRadius: 5,
+    // 추가 스타일링 필요 시 여기에 추가
+  },
+  eventText: {
+    fontSize: 16,
+    // 텍스트 스타일링 필요 시 여기에 추가
+  },
+});
+
+export default Home;

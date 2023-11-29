@@ -55,7 +55,7 @@ const Calender = ({ onDateClick }) => {
         setIsDragging(false);
       },
       onPanResponderEnd: (evt, gestureState) => {
-        console.log(stateRef.current);
+
         if (gestureState.dx < -50) {
           if (stateRef.current) {
             setCurrentDate((prev) => addWeeks(prev, 1));

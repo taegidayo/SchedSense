@@ -1,7 +1,7 @@
 import * as Notifications from "expo-notifications";
-import { Stack, Tabs, router } from "expo-router";
+import { Stack, Tabs, router, useSegments } from "expo-router";
 import React, { useEffect } from "react";
-import { Platform } from "react-native";
+import { Platform, Text } from "react-native";
 import * as Location from "expo-location";
 import * as BackgroundFetch from "expo-background-fetch";
 import * as TaskManager from "expo-task-manager";
@@ -50,9 +50,20 @@ async function scheduleAlarm() {
   });
 }
 
-const Layout = () => {
-  getLocationPermission();
+const handleSignInWithGoogle = async () => {
+  const user = await AsyncStorage.getItem("@user");
+  if (!user) {
+    if (response?.type === "success") {
+      // 인증 요청에 대한 응답이 성공이면, 토큰을 이용하여 유저 정보를 가져옴.
+      await getUserInfo(response.authentication?.accessToken);
+    }
+  } else {
+    // 유저 정보가 이미 있으면, 유저 정보를 가져옴.
+    userInfo = JSON.parse(user);
+  }
+};
 
+const Layout = () => {
   if (Platform.OS == "android") {
   }
   //   const [fontLoaded] = useFonts({
@@ -70,23 +81,13 @@ const Layout = () => {
         name="index"
         options={{
           headerTitle: "메인",
-          headerRight: () => {},
+          headerRight: () => {
+            return <Text>asd</Text>;
+          },
         }}
       ></Tabs.Screen>
       <Tabs.Screen name="calendar"></Tabs.Screen>
     </Tabs>
-
-    // <Stack initialRouteName="home">
-    //   <Stack.Screen
-    //     name="index"
-    //     options={{
-    //       presentation: "modal",
-    //       headerShown: true,
-    //     }}
-    //   />
-
-    //   <Stack.Screen name="calendar" options={{ title: "경기계획" }} />
-    // </Stack>
   );
 };
 

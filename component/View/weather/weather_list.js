@@ -1,6 +1,7 @@
 import { FlatList, ScrollView, StyleSheet, Text, View } from "react-native";
 import { WeatherCardView } from "./weather_card";
 import { LineChart } from "react-native-chart-kit";
+import { useState } from "react";
 
 /**
  *
@@ -9,6 +10,8 @@ import { LineChart } from "react-native-chart-kit";
  *
  */
 const WeatherListView = ({ weatherData }) => {
+  const [weather, setWeather] = useState([]);
+
   const data = {
     labels: [weatherData.map((item) => item.TMP)], // X축 레이블 (시간)
     datasets: [

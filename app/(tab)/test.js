@@ -33,10 +33,9 @@ const Test = () => {
   const a = async () => {
     if (Object.keys(location).length !== 0) {
       // var data = await selectWeatherData();
-      // console.log(data[0]);
+
       setWeather(await selectWeatherData());
       setIsLoaded(true);
-      // console.log(weather[0]);
     }
   };
 
