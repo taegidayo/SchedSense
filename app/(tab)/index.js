@@ -13,7 +13,7 @@ import {
 import { router, useSegments } from "expo-router";
 
 import { plusButton, checkButton, calendarIcon } from "../../assets";
-import { Calendar } from "../../component";
+import { Calendar, renderItem } from "../../component";
 import {
   deleteScheduleDataByID,
   getScheduleData,
@@ -96,36 +96,36 @@ const Home = () => {
     }
   };
 
-  // 이벤트를 렌더링하기 위한 renderItem 함수
-  const renderItem = ({ item, index }) => (
-    <TouchableOpacity
-      onPress={() => editEvent(item)}
-      onLongPress={() => deleteEvent(item)}
-    >
-      <View style={styles.eventItem}>
-        <Image
-          source={calendarIcon}
-          style={{ ...styles.icon, opacity: index === 0 ? 1 : 0 }}
-        />
-        <View style={styles.eventDetails}>
-          <Text style={styles.eventText}>{item.text}</Text>
+  // // 이벤트를 렌더링하기 위한 renderItem 함수
+  // const renderItem = ({ item, index }) => (
+  //   <TouchableOpacity
+  //     onPress={() => editEvent(item)}
+  //     onLongPress={() => deleteEvent(item)}
+  //   >
+  //     <View style={styles.eventItem}>
+  //       <Image
+  //         source={calendarIcon}
+  //         style={{ ...styles.icon, opacity: index === 0 ? 1 : 0 }}
+  //       />
+  //       <View style={styles.eventDetails}>
+  //         <Text style={styles.eventText}>{item.text}</Text>
 
-          <View>
-            <Text style={styles.eventTime}>
-              {item.startDate}~{item.endDate}
-            </Text>
-            {!item.allDay ? (
-              <Text style={styles.eventTime}>
-                {item.startTime} - {item.endTime}
-              </Text>
-            ) : (
-              <Text style={styles.eventTime}>종일</Text>
-            )}
-          </View>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
+  //         <View>
+  //           <Text style={styles.eventTime}>
+  //             {item.startDate}~{item.endDate}
+  //           </Text>
+  //           {!item.allDay ? (
+  //             <Text style={styles.eventTime}>
+  //               {item.startTime} - {item.endTime}
+  //             </Text>
+  //           ) : (
+  //             <Text style={styles.eventTime}>종일</Text>
+  //           )}
+  //         </View>
+  //       </View>
+  //     </View>
+  //   </TouchableOpacity>
+  // );
 
   // AddEventScreen으로 이동하면서 새 이벤트를 추가하는 함수
   const addScreen = (newEvent) => {

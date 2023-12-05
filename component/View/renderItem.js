@@ -1,6 +1,6 @@
-import { Image, TouchableOpacity, View } from "react-native";
-import { Text } from "react-native-web";
+import { Image, StyleSheet, TouchableOpacity, View, Text } from "react-native";
 import { calendarIcon } from "../../assets";
+import { router } from "expo-router";
 
 // 이벤트 수정을 위해 EditScreen으로 이동하는 함수
 const editEvent = (selectedEvent) => {
@@ -58,5 +58,29 @@ const renderItem = ({ item, index }) => (
     </View>
   </TouchableOpacity>
 );
+
+const styles = StyleSheet.create({
+  icon: {
+    width: 20,
+    height: 20,
+    marginRight: 10,
+    opacity: 0, // 아이콘이 없는 항목에서는 투명하게 설정
+  },
+  eventItem: {
+    backgroundColor: "white",
+    flexDirection: "row", // 아이콘과 텍스트를 가로로 배치
+    alignItems: "center", // 세로 중앙 정렬
+    left: -20,
+    padding: 10,
+    marginVertical: 4,
+    marginHorizontal: 16,
+    borderRadius: 5,
+    // 추가 스타일링 필요 시 여기에 추가
+  },
+  eventText: {
+    fontSize: 16,
+    // 텍스트 스타일링 필요 시 여기에 추가
+  },
+});
 
 export { renderItem };

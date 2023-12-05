@@ -74,7 +74,6 @@ const Maps = ({ onMarkerClick }) => {
   const loadScheduleData = async () => {
     var data = await getScheduleDataByUseLocation();
     setEvents(data);
-    console.log(data);
   };
 
   return (
