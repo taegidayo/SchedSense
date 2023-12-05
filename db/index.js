@@ -7,6 +7,9 @@ import {
   insertScheduleData,
   getScheduleData,
   getScheduleDataByID,
+  deleteScheduleDataByID,
+  updateScheduleData,
+  getScheduleDataByUseLocation,
 } from "./schedule";
 
 export {
@@ -16,4 +19,7 @@ export {
   checkWeatherData,
   insertWeatherData,
   selectWeatherData,
+  deleteScheduleDataByID,
+  updateScheduleData,
+  getScheduleDataByUseLocation,
 };

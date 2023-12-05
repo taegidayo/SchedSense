@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -18,13 +18,7 @@ import {
   useLocalSearchParams,
   useSegments,
 } from "expo-router";
-import {
-  getFirestore,
-  collection,
-  getDocs,
-  setDoc,
-  doc,
-} from "firebase/firestore/lite";
+import { setDoc, doc } from "firebase/firestore/lite";
 import { db } from "../config/firebaseConfig";
 import { insertScheduleData } from "../db";
 import { Picker } from "@react-native-picker/picker";
@@ -38,20 +32,30 @@ const AddScreen = ({}) => {
   const [isEndDatePicker, setEndDatePicker] = useState(false);
   const [isStartTimePicker, setStartTimePicker] = useState(false);
   const [isEndTimePicker, setEndTimePicker] = useState(false);
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
+  const [startDate, setStartDate] = useState(new Date(glob.date));
+  const [endDate, setEndDate] = useState(new Date(glob.date));
   const [startTime, setStartTime] = useState(new Date());
   const [endTime, setEndTime] = useState(new Date());
   const [isGeoAlarm, setIsGeoAlarm] = useState(false);
-  const [address, setAddress] = useState("");
+  const [startAddress, setStartAddress] = useState("");
+  const [arriveAddress, setArriveAddress] = useState("");
   const [point, setPoint] = useState({});
   const [geoTime, setGeoTime] = useState(0);
   const [alarmTime, setAlarmTime] = useState(0);
-  const [selectedValue, setSelectedValue] = useState("분");
+
+  const [arriveDatePicker, setArriveDatePicker] = useState(false);
+  const [arriveTimePicker, setArriveTimePicker] = useState(false);
+  const [arriveDate, setArriveDate] = useState(new Date());
+  const [arriveTime, setArriveTime] = useState(new Date());
+  const [useAlram, setUseAlarm] = useState(false);
+  const [totalTime, setTotalTime] = useState(0);
 
   const toggleAlldaySwitch = () =>
     setIsAllDay((previousState) => !previousState);
   const toggleGeoAlarmSwitch = () => setIsGeoAlarm((prev) => !prev);
+
+  const toggleUseAlramSwitch = () =>
+    setUseAlarm((previousState) => !previousState);
 
   const handleStartDateChange = (selectedDate) => {
     setStartDate(selectedDate);
@@ -74,15 +78,13 @@ const AddScreen = ({}) => {
   };
 
   useEffect(() => {
-    console.log(segments);
-    console.log(glob);
-    setAddress(glob.address);
+    setArriveAddress(glob.arriveAddress);
+    setStartAddress(glob.startAddress);
+    setTotalTime(glob.totalTime);
   }, [segments]);
 
   // 사용자가 저장 버튼을 누르는 등의 저장 동작을 수행하는 함수
   const handleSaveEvent = async () => {
-    console.log(address);
-
     // 현지 시간대를 고려하여 날짜를 'YYYY-MM-DD' 형식의 문자열로 변환하는 함수
     const formatDate = (date) => {
       const offset = date.getTimezoneOffset() * 60000;
@@ -112,23 +114,42 @@ const AddScreen = ({}) => {
       endTime: finalEndTime,
       isAllDay: isAllDay,
       isGeoAlarm: isGeoAlarm,
-      address: isGeoAlarm ? address : null,
-      geoTime: isGeoAlarm ? 10 : null,
+
+      startLat: isGeoAlarm ? glob.startLat : null,
+      startLong: isGeoAlarm ? glob.startLong : null,
+      startAddress: isGeoAlarm ? startAddress : null,
+      arriveLat: isGeoAlarm ? glob.arriveLat : null,
+      arriveLong: isGeoAlarm ? glob.arriveLong : null,
+      arriveAddress: isGeoAlarm ? arriveAddress : null,
+      totalTime: isGeoAlarm ? glob.totalTime : null,
+      useAlarm: true,
+      alarmTime: alarmTime,
     };
 
     insertScheduleData(newEvent);
 
-    await setDoc(doc(db, "user", "ss", "ss", "Ss"), newEvent);
+    // await setDoc(doc(db, "user", "ss", "ss", "Ss"), newEvent);
     router.push({ pathname: "/", params: { update: true } });
   };
 
   const checkData = () => {
     if (eventText.length == 0) {
-      return true;
-    } else if (isGeoAlarm && address == undefined) {
-      return true;
-    } else return false;
+      return 1;
+    } else if (isGeoAlarm && arriveAddress == undefined) {
+      return 2;
+    } else return 0;
   };
+
+  //알람 시간 선택을 위한 picker의 Ref
+  const pickerRef = useRef();
+
+  function open() {
+    pickerRef.current.focus();
+  }
+
+  function close() {
+    pickerRef.current.blur();
+  }
 
   return (
     <View style={styles.container}>
@@ -140,7 +161,6 @@ const AddScreen = ({}) => {
           placeholder="제목"
         />
       </View>
-
       {/* 하루 종일' 스위치 섹션 */}
       <View style={styles.section}>
         <Text style={styles.label}>하루 종일</Text>
@@ -152,7 +172,6 @@ const AddScreen = ({}) => {
           value={isAllDay}
         />
       </View>
-
       {/* 날짜와 시간을 선택하는 섹션 */}
       <View style={styles.dateTimeContainer}>
         <View style={styles.dateAndTime}>
@@ -219,7 +238,6 @@ const AddScreen = ({}) => {
           )}
         </View>
       </View>
-
       {/* 시작 날짜 선택기 모달 */}
       <DateTimePickerModal
         isVisible={isStartDatePicker}
@@ -227,7 +245,6 @@ const AddScreen = ({}) => {
         onConfirm={handleStartDateChange}
         onCancel={() => setStartDatePicker(false)}
       />
-
       {/* 끝 날짜 선택기 모달 */}
       <DateTimePickerModal
         isVisible={isEndDatePicker}
@@ -235,7 +252,6 @@ const AddScreen = ({}) => {
         onConfirm={handleEndDateChange}
         onCancel={() => setEndDatePicker(false)}
       />
-
       {/* 시작 시간 선택기 모달 */}
       <DateTimePickerModal
         isVisible={isStartTimePicker}
@@ -243,7 +259,6 @@ const AddScreen = ({}) => {
         onConfirm={handleStartTimeChange}
         onCancel={() => setStartTimePicker(false)}
       />
-
       {/* 끝 시간 선택기 모달 */}
       <DateTimePickerModal
         isVisible={isEndTimePicker}
@@ -251,7 +266,6 @@ const AddScreen = ({}) => {
         onConfirm={handleEndTimeChange}
         onCancel={() => setEndTimePicker(false)}
       />
-
       {/* 위치 선택' 스위치 섹션 */}
       <View style={styles.section}>
         <Text style={styles.label}>위치 기반 알림</Text>
@@ -263,65 +277,75 @@ const AddScreen = ({}) => {
           value={isGeoAlarm}
         />
       </View>
-
       <Button
         title="위치지정"
         onPress={() => {
-          router.replace(`/test5`);
+          router.replace(`/Maps?Page=AddScreen`);
         }}
         disabled={!isGeoAlarm}
       />
-
-      <View>
-        <Text>{address}</Text>
-      </View>
-
       {isGeoAlarm ? (
-        <View style={styles.section}>
-          <Text>도착시간 설정:</Text>
-          <TextInput
-            keyboardType="number-pad"
-            value={geoTime}
-            onChangeText={setGeoTime}
-            style={styles.input}
-          />
-          <Text>분 전 도착</Text>
+        <View>
+          <Text>도착지:{arriveAddress}</Text>
         </View>
-      ) : null
-      // <View style={styles.section}>
-      //   <Text>알림시간 설정: 일정시작</Text>
-      //   <TextInput
-      //     keyboardType="number-pad"
-      //     value={alarmTime}
-      //     onChangeText={setAlarmTime}
-      //     style={styles.input}
-      //   />
-      //   <Picker
-      //     style={{ width: 100 }}
-      //     selectedValue={selectedValue}
-      //     onValueChange={(itemValue, itemIndex) =>
-      //       setSelectedValue(itemValue)
-      //     }
-      //   >
-      //     <Picker.Item label="분" value="분" />
-      //     <Picker.Item label="시간" value="시간" />
-      //     <Picker.Item label="일" value="일" />
-      //   </Picker>
+      ) : null}
+      {totalTime != undefined ? (
+        <View>
+          <Text>예상 소요시간: {totalTime}</Text>
+        </View>
+      ) : null}
 
-      //   <Text>전</Text>
-      // </View>
-      }
+      {/* 위치 선택' 스위치 섹션 */}
+      <View style={styles.section}>
+        <Text style={styles.label}>알림 사용</Text>
+        <Switch
+          trackColor={{ false: "#767577", true: "#81b0ff" }}
+          thumbColor={useAlram ? "#f5dd4b" : "#f4f3f4"}
+          ios_backgroundColor="#3e3e3e"
+          onValueChange={toggleUseAlramSwitch}
+          value={useAlram}
+        />
+      </View>
+      {/* 알람시간을 선택하는 선택 창. */}
+      {useAlram ? (
+        <Picker
+          ref={pickerRef}
+          selectedValue={alarmTime}
+          onValueChange={(itemValue, itemIndex) => setAlarmTime(itemValue)}
+        >
+          <Picker.Item
+            label={`${isGeoAlarm ? "도착" : ""} 10분 전 알림`}
+            value={10}
+          />
+          <Picker.Item
+            label={`${isGeoAlarm ? "도착" : ""}20분 전`}
+            value={20}
+          />
+          <Picker.Item
+            label={`${isGeoAlarm ? "도착" : ""}30분 전`}
+            value={30}
+          />
+          <Picker.Item
+            label={`${isGeoAlarm ? "도착" : ""}1시간 전`}
+            value={60}
+          />
+        </Picker>
+      ) : null}
 
       {/* 저장 버튼 */}
       <View style={{ marginTop: 10 }}>
-        <Button title="저장" onPress={handleSaveEvent} disabled={checkData()} />
+        <Button
+          title="저장"
+          onPress={handleSaveEvent}
+          disabled={checkData() != 0}
+        />
       </View>
-
-      {checkData() ? (
+      {checkData() != 0 ? (
         <View>
-          <Text style={styles.notice}>제목을 입력해야 합니다.</Text>
           <Text style={styles.notice}>
-            또한, 위치기반 알림을 받기 위해서는 위치지정을 해야합니다.
+            {checkData() == 1
+              ? "제목을 입력해야 합니다."
+              : "위치기반 알림을 받기 위해서는 위치지정을 해야합니다."}
           </Text>
         </View>
       ) : null}

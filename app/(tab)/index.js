@@ -10,6 +10,7 @@ import {
   ScrollView,
   Image,
   Button,
+  Alert,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 import { LocaleConfig } from "react-native-calendars";
@@ -23,7 +24,12 @@ import {
 
 import { plusButton, checkButton, calendarIcon, menuIcon } from "../../assets";
 import { Calender } from "../../component";
-import { getScheduleData, insertScheduleData } from "../../db";
+import {
+  deleteScheduleDataByID,
+  getScheduleData,
+  insertScheduleData,
+} from "../../db";
+import { getDatesBetween } from "../../utils";
 
 const Home = () => {
   // 현재 날짜를 한국 시간대(KST)를 기준으로 설정하는 함수
@@ -58,35 +64,54 @@ const Home = () => {
     setEvents(await getScheduleData());
   };
   useEffect(() => {
-    scheduleUpdate();
+    setTimeout(() => {
+      scheduleUpdate();
+    }, 1000);
   }, [segments]);
 
   // 확인 버튼을 눌렀을 때 실행할 함수
   const handleConfirmPress = async () => {
-    const newEvent = {
-      text: text, // 사용자가 입력한 텍스트
-      startDate: selectedDate, // 선택된 날짜
-      endDate: selectedDate, // 종료 날짜도 선택된 날짜로 설정 (하루 종일 이벤트)
-      startTime: null, // 하루 종일 이벤트이므로 시간은 null
-      endTime: null, // 하루 종일 이벤트이므로 시간은 null
-      allDay: true, // 하루 종일 이벤트 플래그
-    };
-    await insertScheduleData(newEvent);
+    if (text.length == 0) {
+      return Alert.alert(
+        "알림", // 대화상자의 제목
+        `텍스트를 입력하여야 합니다.`, // 대화상자의 내용
+        [
+          {
+            text: "확인",
+            onPress: () => {},
+            style: "cancel",
+          },
+        ]
+      );
+    } else {
+      const newEvent = {
+        text: text, // 사용자가 입력한 텍스트
+        startDate: selectedDate, // 선택된 날짜
+        endDate: selectedDate, // 종료 날짜도 선택된 날짜로 설정 (하루 종일 이벤트)
+        startTime: null, // 하루 종일 이벤트이므로 시간은 null
+        endTime: null, // 하루 종일 이벤트이므로 시간은 null
+        allDay: true, // 하루 종일 이벤트 플래그
+      };
+      // await insertScheduleData(newEvent);
 
-    // 해당 날짜에 이벤트 배열이 없다면 새 배열 생성
+      // 해당 날짜에 이벤트 배열이 없다면 새 배열 생성
 
-    // 새 이벤트 객체를 생성하여 해당 날짜의 배열에 추가
-    setTimeout(() => {
-      scheduleUpdate();
-    }, 1000);
+      // 새 이벤트 객체를 생성하여 해당 날짜의 배열에 추가
+      setTimeout(() => {
+        scheduleUpdate();
+      }, 1000);
 
-    setText(""); // 텍스트 입력 필드 초기화
-    setModalVisible(false); // 모달 닫기
+      setText(""); // 텍스트 입력 필드 초기화
+      setModalVisible(false); // 모달 닫기
+    }
   };
 
   // 이벤트를 렌더링하기 위한 renderItem 함수
   const renderItem = ({ item, index }) => (
-    <TouchableOpacity onPress={() => editEvent(item, selectedDate)}>
+    <TouchableOpacity
+      onPress={() => editEvent(item, selectedDate)}
+      onLongPress={() => deleteEvent(item)}
+    >
       <View style={styles.eventItem}>
         <Image
           source={index === 0 ? calendarIcon : null}
@@ -94,11 +119,19 @@ const Home = () => {
         />
         <View style={styles.eventDetails}>
           <Text style={styles.eventText}>{item.text}</Text>
-          {!item.allDay && (
+
+          <View>
             <Text style={styles.eventTime}>
-              {item.startTime} - {item.endTime}
+              {item.startDate}~{item.endDate}
             </Text>
-          )}
+            {!item.allDay ? (
+              <Text style={styles.eventTime}>
+                {item.startTime} - {item.endTime}
+              </Text>
+            ) : (
+              <Text style={styles.eventTime}>종일</Text>
+            )}
+          </View>
         </View>
       </View>
     </TouchableOpacity>
@@ -131,16 +164,7 @@ const Home = () => {
 
   // 이벤트 수정을 위해 EditScreen으로 이동하는 함수
   const editEvent = (selectedEvent) => {
-    console.log(
-      `/EditScreen?id=${selectedEvent.id}&updateEvent=${updateEvent}&deleteEvent=${deleteEvent}`
-    );
     router.push(`/EditScreen?id=${selectedEvent.id}`);
-
-    // navigation.navigate("EditScreen", {
-    //   event: selectedEvent,
-    //   updateEvent: updateEvent,
-    //   deleteEvent: deleteEvent,
-    // });
   };
 
   // 이벤트 업데이트 함수
@@ -170,15 +194,25 @@ const Home = () => {
   };
 
   // 이벤트 삭제 함수
-  const deleteEvent = (eventToDelete) => {
-    setEvents((prevEvents) => {
-      const updatedEvents = { ...prevEvents };
-      const dateKey = eventToDelete.startDate; // 이벤트의 시작 날짜를 키로 사용
-      updatedEvents[dateKey] = updatedEvents[dateKey].filter(
-        (event) => event !== eventToDelete
-      );
-      return updatedEvents;
-    });
+  const deleteEvent = (item) => {
+    return Alert.alert(
+      "알림", // 대화상자의 제목
+      `${item.text}를 삭제하시겠습니까?.`, // 대화상자의 내용
+      [
+        {
+          text: "예",
+          onPress: async () => {
+            await deleteScheduleDataByID(item.id);
+            scheduleUpdate();
+          },
+        },
+        {
+          text: "아니오",
+          onPress: () => {},
+          style: "cancel",
+        },
+      ]
+    );
   };
 
   return (
@@ -187,18 +221,19 @@ const Home = () => {
         events={events}
         onDateClick={(i) => {
           setSelectedDate(formatDate(i));
-          console.log(
-            events.filter((item) => {
-              return item.startDate == selectedDate;
-            })
-          );
         }}
       />
 
       {/* <ScrollView style={styles.eventContainer}> */}
       <FlatList
         data={events.filter((item) => {
-          return item.startDate == selectedDate;
+          getDatesBetween(item.startDate, item.endDate);
+
+          return (
+            getDatesBetween(item.startDate, item.endDate).indexOf(
+              selectedDate
+            ) != -1
+          );
         })}
         renderItem={renderItem}
         keyExtractor={(item, index) => index.toString()}
@@ -217,8 +252,8 @@ const Home = () => {
           <TouchableOpacity
             style={styles.addButton}
             onPress={() => {
-              console.log(123);
-              router.push("/AddScreen");
+              console.log(selectedDate);
+              router.push(`/AddScreen?date=${selectedDate}`);
             }}
           >
             <Image source={plusButton} style={styles.addButtonImage} />

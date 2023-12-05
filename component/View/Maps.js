@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Dimensions, TouchableOpacity, Alert } from "react-native";
+import { View, Dimensions, Alert } from "react-native";
 import MapView, {
   Marker,
   AIzaSyBdgOMLn0SaaqPNKjMbzGWZ2BdXJdfREJQ,
 } from "react-native-maps";
 import * as Location from "expo-location";
-import { router } from "expo-router";
+import { router, useGlobalSearchParams } from "expo-router";
+import { marker1, marker2 } from "../../assets";
+import { getScheduleDataByUseLocation } from "../../db";
 
-const Maps = (props) => {
+const Maps = ({}) => {
+  const glob = useGlobalSearchParams();
   const [isLoaded, setIsLoaded] = useState(false);
   const [initialRegion, setInitialRegion] = useState({
     latitude: 37.5665, // 초기 지도 중심 위도
@@ -15,9 +18,10 @@ const Maps = (props) => {
     latitudeDelta: 0.0922, // 지도의 세로 범위
     longitudeDelta: 0.0421, // 지도의 가로 범위
   });
+
   const [currentLocation, setCurrentLocation] = useState(null);
-  const [markerLocation, setMarkerLocation] = useState({});
-  const [isAgree, setIsAgree] = useState(false);
+
+  const [events, setEvents] = useState([]);
 
   useEffect(() => {
     // 현재 위치를 가져오는 비동기 함수
@@ -29,6 +33,7 @@ const Maps = (props) => {
           return;
         }
 
+        // 현재 위치를 가져옴
         Location.watchPositionAsync({}, (location) => {
           setCurrentLocation(location.coords);
           setInitialRegion({
@@ -37,7 +42,6 @@ const Maps = (props) => {
             latitudeDelta: 0.0922,
             longitudeDelta: 0.0421,
           });
-          setMarkerLocation(location.coords);
           setIsLoaded(true);
         });
       } catch (error) {
@@ -46,8 +50,10 @@ const Maps = (props) => {
     };
 
     getLocationAsync();
+    loadScheduleData();
   }, []);
 
+  // 도착지의 좌표로 이루어진 값에 대해 주소로 변환해주는 함수, TMap api활용함. longitude와 latitude를 입력하면 됨
   const getAddress = async (lon, lat) => {
     var address = "";
     await fetch(
@@ -59,48 +65,18 @@ const Maps = (props) => {
     )
       .then((response) => response.json())
       .then((json) => {
-        console.log(json, 123);
         address = json.addressInfo.fullAddress.split(",")[2];
       });
 
-    console.log(address);
     return address;
   };
 
-  const showConfirmDialog = async () => {
-    var address = await getAddress(
-      markerLocation.longitude,
-      markerLocation.latitude
-    );
-    console.log(`${address}`);
-
-    return Alert.alert(
-      "확인", // 대화상자의 제목
-      `선택된 주소는 \n${address.split(",")} 입니다.\n등록하시겠습니까?`, // 대화상자의 내용
-      [
-        // 버튼 배열
-        {
-          text: "아니오",
-          onPress: () => console.log("아니오 선택됨"),
-          style: "cancel",
-        },
-        {
-          text: "예",
-          onPress: () =>
-            router.replace(
-              `/AddScreen?address=${address}&lat=${markerLocation.latitude}&long=${markerLocation.longitude}`
-            ),
-        },
-      ]
-    );
+  const loadScheduleData = async () => {
+    var data = await getScheduleDataByUseLocation();
+    setEvents(data);
+    console.log(data);
   };
 
-  useEffect(() => {
-    console.log("1");
-    if (isAgree) {
-      router.push("/AddScreen");
-    }
-  }, [isAgree]);
   return (
     <View style={{ flex: 1 }}>
       {isLoaded ? (
@@ -108,48 +84,26 @@ const Maps = (props) => {
           provider={AIzaSyBdgOMLn0SaaqPNKjMbzGWZ2BdXJdfREJQ} // 구글 맵스를 사용하기 위한 설정
           style={{
             width: Dimensions.get("window").width, // 전체 화면 너비
-            height: Dimensions.get("window").height * 0.6, // 화면의 60%를 차지하도록 설정
+            height: Dimensions.get("window").height * 0.4, // 화면의 60%를 차지하도록 설정
           }}
           initialRegion={initialRegion}
-          onPress={(event) => {
-            setMarkerLocation(event.nativeEvent.coordinate);
-          }}
+          onPress={(event) => {}}
         >
-          {currentLocation && (
-            <Marker
-              coordinate={{
-                latitude: markerLocation.latitude,
-                longitude: markerLocation.longitude,
-              }}
-              title="내 위치"
-              description="현재 위치"
-            />
-          )}
+          {events.map((event) => {
+            return (
+              <Marker
+                coordinate={{
+                  latitude: event.arriveLat,
+                  longitude: event.arriveLong,
+                }}
+                title={event.text}
+              />
+            );
+          })}
         </MapView>
-      ) : (
-        <View></View>
-      )}
-
-      <TouchableOpacity
-        style={{
-          backgroundColor: "blue", // 버튼 배경색 설정
-          alignItems: "center",
-          justifyContent: "center",
-          padding: 10,
-          margin: 10,
-          borderRadius: 5,
-        }}
-        onPress={() => {
-          // 여기에 버튼을 눌렀을 때의 동작을 추가합니다.
-          console.log(`${markerLocation.latitude}`);
-          getAddress(markerLocation.longitude, markerLocation.latitude);
-          showConfirmDialog();
-        }}
-      >
-        <Text style={{ color: "white" }}>확인</Text>
-      </TouchableOpacity>
+      ) : null}
     </View>
   );
 };
 
-export default Maps;
+export { Maps };

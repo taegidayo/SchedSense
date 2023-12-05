@@ -113,6 +113,7 @@ const insertWeatherData = async (weatherData, x, y) => {
  */
 const checkWeatherData = async (x, y, baseDate, baseTime) => {
   const db = SQLite.openDatabase("db.db");
+
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(

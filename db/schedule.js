@@ -14,6 +14,9 @@ const insertScheduleData = async (data) => {
     const db = SQLite.openDatabase("db.db");
 
     db.transaction((tx) => {
+      // todo 데이터테이블을 초기화 할 때 주석지우고 사용
+
+      //데이터테이블이 없을 경우 테이블을 생성
       tx.executeSql(
         `CREATE TABLE IF NOT EXISTS schedule (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -26,17 +29,22 @@ const insertScheduleData = async (data) => {
           noticeTime INTEGER,
           isWantNotice bool,
           useLocation bool,
-          locationX float,
-          locationY float,
-          locationName text 
+          startLat float,
+          startLong float,
+          startAddress text,
+          arriveLat float,
+          arriveLong float,
+          arriveAddress text ,
+          totalTime INTEGER,
         );`
       );
 
+      //데이터 삽입1
       db.transaction(
         (tx) => {
           tx.executeSql(
-            `INSERT INTO schedule (text,startDate,startTime, endDate, endTime, isAllDay, noticeTime, isWantNotice, useLocation, locationX, locationY, locationName)
-              VALUES (?,?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO schedule (text,startDate,startTime, endDate, endTime, isAllDay, noticeTime, isWantNotice, useLocation,startLat,startLong,startAddress, arriveLat, arriveLong, arriveAddress,totalTime)
+              VALUES (?,?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)`,
             [
               data.text,
               data.startDate,
@@ -44,16 +52,22 @@ const insertScheduleData = async (data) => {
               data.endDate,
               data.endTime,
               data.isAllDay,
-              data.noticeTime,
+              data.alarmTime,
               data.isWantNotice,
-              data.useLocation,
-              data.locationX,
-              data.locationY,
-              data.locationName,
+              data.isGeoAlarm,
+              data.startLat,
+              data.startLong,
+              data.startAddress,
+              data.arriveLat,
+              data.arriveLong,
+              data.arriveAddress,
+              data.totalTime,
             ]
           );
         },
-        (error) => {},
+        (error) => {
+          console.log(error);
+        },
         () => {}
       );
     });
@@ -80,6 +94,35 @@ const getScheduleData = async () => {
       tx.executeSql(
         `SELECT * FROM schedule;`,
         [],
+        (_, result) => {
+          let data = [];
+          for (let i = 0; i < result.rows.length; i++) {
+            data.push(result.rows.item(i));
+          }
+          resolve(data); // 반환할 데이터
+          // }
+          //  else {
+          // 일치하는 레코드가 없습니다.
+          // resolve(false);
+          // }
+        },
+        (_, error) => {
+          // 쿼리 실행 중 오류 발생
+          reject(error);
+        }
+      );
+    });
+  });
+};
+
+const getScheduleDataByUseLocation = async () => {
+  const db = SQLite.openDatabase("db.db");
+
+  return new Promise((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        `SELECT * FROM schedule WHERE useLocation= ?;`,
+        [1],
         (_, result) => {
           let data = [];
           for (let i = 0; i < result.rows.length; i++) {
@@ -130,19 +173,25 @@ const getScheduleDataByID = async (id) => {
   });
 };
 
-const selectWeatherData = async () => {
+const deleteScheduleDataByID = async (id) => {
   const db = SQLite.openDatabase("db.db");
+
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
-        `SELECT * FROM weather ;`,
-        [],
+        `DELETE FROM schedule WHERE ID= ?;`,
+        [id],
         (_, result) => {
           let data = [];
           for (let i = 0; i < result.rows.length; i++) {
             data.push(result.rows.item(i));
           }
           resolve(data); // 반환할 데이터
+          // }
+          //  else {
+          // 일치하는 레코드가 없습니다.
+          // resolve(false);
+          // }
         },
         (_, error) => {
           // 쿼리 실행 중 오류 발생
@@ -153,4 +202,56 @@ const selectWeatherData = async () => {
   });
 };
 
-export { insertScheduleData, getScheduleData, getScheduleDataByID };
+const updateScheduleData = async (id, data) => {
+  console.log(data);
+  try {
+    const db = SQLite.openDatabase("db.db");
+
+    db.transaction((tx) => {
+      // todo 데이터테이블을 초기화 할 때 주석지우고 사용
+      // tx.executeSql(`DROP TABLE IF  EXISTS schedule ;`);
+
+      //데이터 삽입1
+      db.transaction(
+        (tx) => {
+          tx.executeSql(
+            `UPDATE schedule SET text=? startDate=?,startTime=?, endDate=?, endTime=?, isAllDay=?, noticeTime=?, isWantNotice=?, useLocation=?,startLat=?,startLong=?,startAddress=?, arriveLat=?, arriveLong=?, arriveAddress=?,totalTime=?,alarmTime=? WHERE id=?;`,
+            [
+              data.text,
+              data.startDate,
+              data.startTime,
+              data.endDate,
+              data.endTime,
+              data.isAllDay,
+              data.noticeTime,
+              data.isWantNotice,
+              data.useLocation,
+              data.startLat,
+              data.startLong,
+              data.startAddress,
+              data.arriveLat,
+              data.arriveLong,
+              data.arriveAddress,
+              data.totalTime,
+              data.alarmTime,
+              id,
+            ]
+          );
+        },
+        (error) => {},
+        () => {}
+      );
+    });
+  } catch (error) {
+    console.log(err);
+  }
+};
+
+export {
+  insertScheduleData,
+  getScheduleData,
+  getScheduleDataByID,
+  deleteScheduleDataByID,
+  updateScheduleData,
+  getScheduleDataByUseLocation,
+};

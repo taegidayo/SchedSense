@@ -11,6 +11,12 @@
         {
           "sounds": ["./local/assets/alarm.wav"]
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
+        }
       ]
     ],
     "name": "Schedsense",

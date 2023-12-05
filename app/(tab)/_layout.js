@@ -80,13 +80,18 @@ const Layout = () => {
       <Tabs.Screen
         name="index"
         options={{
+          tabBarLabel: "홈",
           headerTitle: "메인",
-          headerRight: () => {
-            return <Text>asd</Text>;
-          },
+          headerRight: () => {},
         }}
       ></Tabs.Screen>
-      <Tabs.Screen name="calendar"></Tabs.Screen>
+      <Tabs.Screen
+        name="others"
+        options={{
+          headerTitle: "메인",
+          tabBarLabel: "기타",
+        }}
+      ></Tabs.Screen>
     </Tabs>
   );
 };

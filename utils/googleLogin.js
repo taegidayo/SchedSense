@@ -53,7 +53,6 @@ const getUserInfo = async (token) => {
 
 const handleLogout = async () => {
   await AsyncStorage.removeItem("@user");
-  setUserInfo(null);
 };
 
 export { promptAsync, handleLogout, handleSignInWithGoogle, getUserInfo };

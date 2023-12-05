@@ -85,10 +85,12 @@ const Layout = () => {
         options={{
           presentation: "modal",
           headerShown: true,
+          title: "일정 추가",
         }}
       />
 
-      <Stack.Screen name="EditScreen" options={{ title: "경기계획" }} />
+      <Stack.Screen name="EditScreen" options={{ title: "일정 수정" }} />
+      <Stack.Screen name="Maps" options={{ title: "위치 지정" }} />
       <Stack.Screen
         name="(tab)"
         options={{
