@@ -20,7 +20,7 @@ import {
 import { db } from "../../config/firebaseConfig";
 import { getEventLevel } from "../../utils";
 
-const Calender = ({ onDateClick, events }) => {
+const Calendar = ({ onDateClick, events }) => {
   const day = ["일", "월", "화", "수", "목", "금", "토"];
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -335,4 +335,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export { Calender };
+export { Calendar as Calender };

@@ -7,23 +7,13 @@ import {
   StyleSheet,
   TextInput,
   FlatList,
-  ScrollView,
   Image,
-  Button,
   Alert,
 } from "react-native";
-import { Calendar } from "react-native-calendars";
-import { LocaleConfig } from "react-native-calendars";
-import {
-  Navigator,
-  router,
-  useGlobalSearchParams,
-  usePathname,
-  useSegments,
-} from "expo-router";
+import { router, useSegments } from "expo-router";
 
-import { plusButton, checkButton, calendarIcon, menuIcon } from "../../assets";
-import { Calender } from "../../component";
+import { plusButton, checkButton, calendarIcon } from "../../assets";
+import { Calendar } from "../../component";
 import {
   deleteScheduleDataByID,
   getScheduleData,
@@ -217,7 +207,7 @@ const Home = () => {
 
   return (
     <View style={styles.container}>
-      <Calender
+      <Calendar
         events={events}
         onDateClick={(i) => {
           setSelectedDate(formatDate(i));
