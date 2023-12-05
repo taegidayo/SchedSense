@@ -9,7 +9,7 @@ import { router, useGlobalSearchParams } from "expo-router";
 import { marker1, marker2 } from "../../assets";
 import { getScheduleDataByUseLocation } from "../../db";
 
-const Maps = ({}) => {
+const Maps = ({ onMarkerClick }) => {
   const glob = useGlobalSearchParams();
   const [isLoaded, setIsLoaded] = useState(false);
   const [initialRegion, setInitialRegion] = useState({
@@ -89,7 +89,7 @@ const Maps = ({}) => {
           initialRegion={initialRegion}
           onPress={(event) => {}}
         >
-          {events.map((event) => {
+          {events.map((event, index) => {
             return (
               <Marker
                 coordinate={{
@@ -97,6 +97,10 @@ const Maps = ({}) => {
                   longitude: event.arriveLong,
                 }}
                 title={event.text}
+                key={index}
+                onPress={() => {
+                  onMarkerClick(event);
+                }}
               />
             );
           })}

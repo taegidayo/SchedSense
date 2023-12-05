@@ -82,7 +82,12 @@ const Test = () => {
         <View>
           <WeatherListView weatherData={weather} />
           <View style={{ marginTop: 20 }} />
-          <Maps />
+          <Maps
+            onMarkerClick={(event) => {
+              //여기에 마커를 눌렀을 때 값을 가져오는 함수 실행
+              console.log(event);
+            }}
+          />
         </View>
       ) : (
         <ActivityIndicator size="large" color="#0000ff" />
