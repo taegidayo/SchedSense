@@ -84,7 +84,7 @@ const Test = () => {
           <View style={{ marginTop: 20 }} />
           <Maps
             onMarkerClick={(event) => {
-              //여기에 마커를 눌렀을 때 값을 가져오는 함수 실행
+              //todo 여기에 마커를 눌렀을 때 값을 다루는 함수 실행 혹은 외부에서 함수를 가져와서 함수를 호출해도 됨
               console.log(event);
             }}
           />

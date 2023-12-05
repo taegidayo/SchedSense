@@ -215,7 +215,7 @@ const updateScheduleData = async (id, data) => {
       db.transaction(
         (tx) => {
           tx.executeSql(
-            `UPDATE schedule SET text=? startDate=?,startTime=?, endDate=?, endTime=?, isAllDay=?, noticeTime=?, isWantNotice=?, useLocation=?,startLat=?,startLong=?,startAddress=?, arriveLat=?, arriveLong=?, arriveAddress=?,totalTime=?,alarmTime=? WHERE id=?;`,
+            `UPDATE schedule SET text=?,startDate=?,startTime=?, endDate=?, endTime=?, isAllDay=?, noticeTime=?, isWantNotice=?, useLocation=?,startLat=?,startLong=?,startAddress=?, arriveLat=?, arriveLong=?, arriveAddress=?,totalTime=? WHERE id=?;`,
             [
               data.text,
               data.startDate,
@@ -223,7 +223,7 @@ const updateScheduleData = async (id, data) => {
               data.endDate,
               data.endTime,
               data.isAllDay,
-              data.noticeTime,
+              data.alarmTime,
               data.isWantNotice,
               data.useLocation,
               data.startLat,
@@ -233,12 +233,13 @@ const updateScheduleData = async (id, data) => {
               data.arriveLong,
               data.arriveAddress,
               data.totalTime,
-              data.alarmTime,
               id,
             ]
           );
         },
-        (error) => {},
+        (error) => {
+          console.log(error);
+        },
         () => {}
       );
     });

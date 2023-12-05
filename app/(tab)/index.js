@@ -99,12 +99,12 @@ const Home = () => {
   // 이벤트를 렌더링하기 위한 renderItem 함수
   const renderItem = ({ item, index }) => (
     <TouchableOpacity
-      onPress={() => editEvent(item, selectedDate)}
+      onPress={() => editEvent(item)}
       onLongPress={() => deleteEvent(item)}
     >
       <View style={styles.eventItem}>
         <Image
-          source={index === 0 ? calendarIcon : null}
+          source={calendarIcon}
           style={{ ...styles.icon, opacity: index === 0 ? 1 : 0 }}
         />
         <View style={styles.eventDetails}>

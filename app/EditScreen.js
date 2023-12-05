@@ -19,7 +19,12 @@ import {
   useSegments,
 } from "expo-router";
 import { setDoc, doc } from "firebase/firestore/lite";
-import { getScheduleDataByID, insertScheduleData } from "../db";
+import {
+  deleteScheduleDataByID,
+  getScheduleDataByID,
+  insertScheduleData,
+  updateScheduleData,
+} from "../db";
 import { Picker } from "@react-native-picker/picker";
 
 const EditScreen = ({}) => {
@@ -164,7 +169,6 @@ const EditScreen = ({}) => {
       endTime: finalEndTime,
       isAllDay: isAllDay,
       isGeoAlarm: isGeoAlarm,
-
       startLat: isGeoAlarm ? glob.startLat : null,
       startLong: isGeoAlarm ? glob.startLong : null,
       startAddress: isGeoAlarm ? startAddress : null,
@@ -176,7 +180,7 @@ const EditScreen = ({}) => {
       alarmTime: alarmTime,
     };
 
-    insertScheduleData(newEvent);
+    updateScheduleData(glob.id, newEvent);
 
     // await setDoc(doc(db, "user", "ss", "ss", "Ss"), newEvent);
     router.push({ pathname: "/", params: { update: true } });
@@ -384,8 +388,33 @@ const EditScreen = ({}) => {
 
       {/* 저장 버튼 */}
       <View style={{ marginTop: 10 }}>
-        <Button title="저장" onPress={() => {}} />
-        <Button title="삭제" onPress={() => {}} color="red" />
+        <Button title="저장" onPress={handleSaveEvent} />
+        <Button
+          title="삭제"
+          onPress={() => {
+            // 이벤트 삭제 함수
+
+            return Alert.alert(
+              "알림", // 대화상자의 제목
+              `${eventText}를 삭제하시겠습니까?.`, // 대화상자의 내용
+              [
+                {
+                  text: "예",
+                  onPress: async () => {
+                    await deleteScheduleDataByID(glob.id);
+                    router.back();
+                  },
+                },
+                {
+                  text: "아니오",
+                  onPress: () => {},
+                  style: "cancel",
+                },
+              ]
+            );
+          }}
+          color="red"
+        />
       </View>
       {checkData() != 0 ? (
         <View>
