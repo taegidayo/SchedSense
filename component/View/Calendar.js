@@ -335,4 +335,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export { Calendar as Calender };
+export { Calendar };
