@@ -88,7 +88,7 @@ const Layout = () => {
       <Tabs.Screen
         name="others"
         options={{
-          headerTitle: "메인",
+          headerTitle: "기타정보",
           tabBarLabel: "기타",
         }}
       ></Tabs.Screen>

@@ -1,6 +1,14 @@
-import { Image, StyleSheet, TouchableOpacity, View, Text } from "react-native";
+import {
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  Text,
+  Alert,
+} from "react-native";
 import { calendarIcon } from "../../assets";
 import { router } from "expo-router";
+import { deleteScheduleDataByID } from "../../db";
 
 // 이벤트 수정을 위해 EditScreen으로 이동하는 함수
 const editEvent = (selectedEvent) => {
@@ -16,7 +24,8 @@ const deleteEvent = (item) => {
         text: "예",
         onPress: async () => {
           await deleteScheduleDataByID(item.id);
-          scheduleUpdate();
+
+          router.setParams({ update: item.id });
         },
       },
       {

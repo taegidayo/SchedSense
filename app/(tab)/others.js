@@ -1,4 +1,10 @@
-import { ActivityIndicator, Text, View, StyleSheet } from "react-native";
+import {
+  ActivityIndicator,
+  Text,
+  View,
+  StyleSheet,
+  Button,
+} from "react-native";
 import { getWeatherByPoint, getLocation } from "../../utils";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
@@ -35,6 +41,16 @@ const Test = () => {
     }
   };
 
+  const reload = () => {
+    setIsLoaded(false);
+    setPoint({});
+    setAddress({});
+    setLocation({});
+    setTimeout(() => {
+      // getLocationPermission();
+      getCurrentLocation();
+    }, 1000);
+  };
   async function getLocationPermission() {
     let { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== "granted") {
@@ -89,7 +105,9 @@ const Test = () => {
             }}
           />
 
+          <View style={{ marginTop: 282 }}></View>
           {isEventLoaded ? <RenderItem item={event} index={0} /> : null}
+          <Button title="새로고침" onPress={reload} />
         </View>
       ) : (
         <ActivityIndicator size="large" color="#0000ff" />

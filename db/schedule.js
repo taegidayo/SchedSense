@@ -14,9 +14,6 @@ const insertScheduleData = async (data) => {
     const db = SQLite.openDatabase("db.db");
 
     db.transaction((tx) => {
-      // todo 데이터테이블을 초기화 할 때 주석지우고 사용
-
-      //데이터테이블이 없을 경우 테이블을 생성
       tx.executeSql(
         `CREATE TABLE IF NOT EXISTS schedule (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -38,39 +35,39 @@ const insertScheduleData = async (data) => {
           totalTime INTEGER,
         );`
       );
-
-      //데이터 삽입1
-      db.transaction(
-        (tx) => {
-          tx.executeSql(
-            `INSERT INTO schedule (text,startDate,startTime, endDate, endTime, isAllDay, noticeTime, isWantNotice, useLocation,startLat,startLong,startAddress, arriveLat, arriveLong, arriveAddress,totalTime)
-              VALUES (?,?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)`,
-            [
-              data.text,
-              data.startDate,
-              data.startTime,
-              data.endDate,
-              data.endTime,
-              data.isAllDay,
-              data.alarmTime,
-              data.isWantNotice,
-              data.isGeoAlarm,
-              data.startLat,
-              data.startLong,
-              data.startAddress,
-              data.arriveLat,
-              data.arriveLong,
-              data.arriveAddress,
-              data.totalTime,
-            ]
-          );
-        },
-        (error) => {
-          console.log(error);
-        },
-        () => {}
-      );
     });
+
+    //데이터 삽입1
+    db.transaction(
+      (tx) => {
+        tx.executeSql(
+          `INSERT INTO schedule (text,startDate,startTime, endDate, endTime, isAllDay, noticeTime, isWantNotice, useLocation,startLat,startLong,startAddress, arriveLat, arriveLong, arriveAddress,totalTime)
+              VALUES (?,?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)`,
+          [
+            data.text,
+            data.startDate,
+            data.startTime,
+            data.endDate,
+            data.endTime,
+            data.isAllDay,
+            data.alarmTime,
+            data.isWantNotice,
+            data.isGeoAlarm,
+            data.startLat,
+            data.startLong,
+            data.startAddress,
+            data.arriveLat,
+            data.arriveLong,
+            data.arriveAddress,
+            data.totalTime,
+          ]
+        );
+      },
+      (error) => {
+        console.log(error);
+      },
+      () => {}
+    );
   } catch (error) {
     console.log(err);
   }
@@ -91,28 +88,6 @@ const getScheduleData = async () => {
 
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
-      tx.executeSql(
-        `CREATE TABLE IF NOT EXISTS schedule (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          text TEXT,
-          startDate TEXT,
-          startTime TEXT,
-          endDate TEXT,
-          endTime TEXT,
-          isAllDay bool,
-          noticeTime INTEGER,
-          isWantNotice bool,
-          useLocation bool,
-          startLat float,
-          startLong float,
-          startAddress text,
-          arriveLat float,
-          arriveLong float,
-          arriveAddress text ,
-          totalTime INTEGER,
-        );`
-      );
-
       tx.executeSql(
         `SELECT * FROM schedule;`,
         [],
@@ -143,27 +118,6 @@ const getScheduleDataByUseLocation = async () => {
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
-        `CREATE TABLE IF NOT EXISTS schedule (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          text TEXT,
-          startDate TEXT,
-          startTime TEXT,
-          endDate TEXT,
-          endTime TEXT,
-          isAllDay bool,
-          noticeTime INTEGER,
-          isWantNotice bool,
-          useLocation bool,
-          startLat float,
-          startLong float,
-          startAddress text,
-          arriveLat float,
-          arriveLong float,
-          arriveAddress text ,
-          totalTime INTEGER,
-        );`
-      );
-      tx.executeSql(
         `SELECT * FROM schedule WHERE useLocation= ?;`,
         [1],
         (_, result) => {
@@ -192,27 +146,6 @@ const getScheduleDataByID = async (id) => {
 
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
-      tx.executeSql(
-        `CREATE TABLE IF NOT EXISTS schedule (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          text TEXT,
-          startDate TEXT,
-          startTime TEXT,
-          endDate TEXT,
-          endTime TEXT,
-          isAllDay bool,
-          noticeTime INTEGER,
-          isWantNotice bool,
-          useLocation bool,
-          startLat float,
-          startLong float,
-          startAddress text,
-          arriveLat float,
-          arriveLong float,
-          arriveAddress text ,
-          totalTime INTEGER,
-        );`
-      );
       tx.executeSql(
         `SELECT * FROM schedule WHERE ID= ?;`,
         [id],
@@ -263,6 +196,9 @@ const deleteScheduleDataByID = async (id) => {
           totalTime INTEGER,
         );`
       );
+    });
+
+    db.transaction((tx) => {
       tx.executeSql(
         `DELETE FROM schedule WHERE ID= ?;`,
         [id],
@@ -288,7 +224,6 @@ const deleteScheduleDataByID = async (id) => {
 };
 
 const updateScheduleData = async (id, data) => {
-  console.log(data);
   try {
     const db = SQLite.openDatabase("db.db");
 

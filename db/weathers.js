@@ -116,8 +116,9 @@ const checkWeatherData = async (x, y, baseDate, baseTime) => {
 
   try {
     return new Promise((resolve, reject) => {
-      tx.executeSql(
-        `CREATE TABLE IF NOT EXISTS weather (
+      db.transaction((tx) => {
+        tx.executeSql(
+          `CREATE TABLE IF NOT EXISTS weather (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         LOC_X INTEGER,
         LOC_Y INTEGER,
@@ -138,7 +139,8 @@ const checkWeatherData = async (x, y, baseDate, baseTime) => {
         fcstDate TEXT,
         fcstTime TEXT
       );`
-      );
+        );
+      });
 
       db.transaction((tx) => {
         tx.executeSql(
@@ -195,7 +197,8 @@ const selectWeatherData = async () => {
           fcstTime TEXT
         );`
       );
-
+    });
+    db.transaction((tx) => {
       tx.executeSql(
         `SELECT * FROM weather ;`,
         [],

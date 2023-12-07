@@ -10,7 +10,7 @@ import {
   Image,
   Alert,
 } from "react-native";
-import { router, useSegments } from "expo-router";
+import { router, useGlobalSearchParams, useSegments } from "expo-router";
 
 import { plusButton, checkButton, calendarIcon } from "../../assets";
 import { Calendar, RenderItem } from "../../component";
@@ -22,15 +22,7 @@ import {
 import { getDatesBetween } from "../../utils";
 
 const Home = () => {
-  // 현재 날짜를 한국 시간대(KST)를 기준으로 설정하는 함수
-  const getCurrentDateKST = () => {
-    const now = new Date();
-    const kstOffset = 9 * 60; // KST is UTC+9
-    const localOffset = now.getTimezoneOffset();
-    const kstDate = new Date(now.getTime() + (localOffset + kstOffset) * 60000);
-    return kstDate.toISOString().split("T")[0];
-  };
-
+  const glob = useGlobalSearchParams();
   const [selectedDate, setSelectedDate] = useState(formatDate(new Date()));
   const [modalVisible, setModalVisible] = useState(false);
   const [text, setText] = useState("");
@@ -96,6 +88,9 @@ const Home = () => {
     }
   };
 
+  useEffect(() => {
+    scheduleUpdate();
+  }, [glob]);
   // // 이벤트를 렌더링하기 위한 renderItem 함수
   // const renderItem = ({ item, index }) => (
   //   <TouchableOpacity
@@ -285,10 +280,9 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
-    justifyContent: "flex-start", // Aligns the menu button to the left
+    justifyContent: "flex-start",
     alignItems: "center",
     padding: 16,
-    // If you have a statusBar, you might want to add some top padding here
   },
   eventContainer: {
     flex: 1,
