@@ -13,7 +13,7 @@ import {
 import { router, useSegments } from "expo-router";
 
 import { plusButton, checkButton, calendarIcon } from "../../assets";
-import { Calendar, renderItem } from "../../component";
+import { Calendar, RenderItem } from "../../component";
 import {
   deleteScheduleDataByID,
   getScheduleData,
@@ -225,7 +225,7 @@ const Home = () => {
             ) != -1
           );
         })}
-        renderItem={renderItem}
+        renderItem={RenderItem}
         keyExtractor={(item, index) => index.toString()}
         style={styles.eventList}
       />
@@ -242,7 +242,6 @@ const Home = () => {
           <TouchableOpacity
             style={styles.addButton}
             onPress={() => {
-              console.log(selectedDate);
               router.push(`/AddScreen?date=${selectedDate}`);
             }}
           >

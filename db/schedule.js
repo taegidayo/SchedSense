@@ -92,6 +92,28 @@ const getScheduleData = async () => {
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
+        `CREATE TABLE IF NOT EXISTS schedule (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          text TEXT,
+          startDate TEXT,
+          startTime TEXT,
+          endDate TEXT,
+          endTime TEXT,
+          isAllDay bool,
+          noticeTime INTEGER,
+          isWantNotice bool,
+          useLocation bool,
+          startLat float,
+          startLong float,
+          startAddress text,
+          arriveLat float,
+          arriveLong float,
+          arriveAddress text ,
+          totalTime INTEGER,
+        );`
+      );
+
+      tx.executeSql(
         `SELECT * FROM schedule;`,
         [],
         (_, result) => {
@@ -120,6 +142,27 @@ const getScheduleDataByUseLocation = async () => {
 
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
+      tx.executeSql(
+        `CREATE TABLE IF NOT EXISTS schedule (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          text TEXT,
+          startDate TEXT,
+          startTime TEXT,
+          endDate TEXT,
+          endTime TEXT,
+          isAllDay bool,
+          noticeTime INTEGER,
+          isWantNotice bool,
+          useLocation bool,
+          startLat float,
+          startLong float,
+          startAddress text,
+          arriveLat float,
+          arriveLong float,
+          arriveAddress text ,
+          totalTime INTEGER,
+        );`
+      );
       tx.executeSql(
         `SELECT * FROM schedule WHERE useLocation= ?;`,
         [1],
@@ -150,6 +193,27 @@ const getScheduleDataByID = async (id) => {
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
+        `CREATE TABLE IF NOT EXISTS schedule (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          text TEXT,
+          startDate TEXT,
+          startTime TEXT,
+          endDate TEXT,
+          endTime TEXT,
+          isAllDay bool,
+          noticeTime INTEGER,
+          isWantNotice bool,
+          useLocation bool,
+          startLat float,
+          startLong float,
+          startAddress text,
+          arriveLat float,
+          arriveLong float,
+          arriveAddress text ,
+          totalTime INTEGER,
+        );`
+      );
+      tx.executeSql(
         `SELECT * FROM schedule WHERE ID= ?;`,
         [id],
         (_, result) => {
@@ -178,6 +242,27 @@ const deleteScheduleDataByID = async (id) => {
 
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
+      tx.executeSql(
+        `CREATE TABLE IF NOT EXISTS schedule (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          text TEXT,
+          startDate TEXT,
+          startTime TEXT,
+          endDate TEXT,
+          endTime TEXT,
+          isAllDay bool,
+          noticeTime INTEGER,
+          isWantNotice bool,
+          useLocation bool,
+          startLat float,
+          startLong float,
+          startAddress text,
+          arriveLat float,
+          arriveLong float,
+          arriveAddress text ,
+          totalTime INTEGER,
+        );`
+      );
       tx.executeSql(
         `DELETE FROM schedule WHERE ID= ?;`,
         [id],
@@ -210,6 +295,27 @@ const updateScheduleData = async (id, data) => {
     db.transaction((tx) => {
       // todo 데이터테이블을 초기화 할 때 주석지우고 사용
       // tx.executeSql(`DROP TABLE IF  EXISTS schedule ;`);
+      tx.executeSql(
+        `CREATE TABLE IF NOT EXISTS schedule (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          text TEXT,
+          startDate TEXT,
+          startTime TEXT,
+          endDate TEXT,
+          endTime TEXT,
+          isAllDay bool,
+          noticeTime INTEGER,
+          isWantNotice bool,
+          useLocation bool,
+          startLat float,
+          startLong float,
+          startAddress text,
+          arriveLat float,
+          arriveLong float,
+          arriveAddress text ,
+          totalTime INTEGER,
+        );`
+      );
 
       //데이터 삽입1
       db.transaction(

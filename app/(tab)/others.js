@@ -4,7 +4,7 @@ import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import * as Location from "expo-location";
 import { checkWeatherData, selectWeatherData } from "../../db";
-import { Maps, WeatherListView } from "../../component";
+import { Maps, WeatherListView, RenderItem } from "../../component";
 import { useSegments } from "expo-router";
 const Test = () => {
   const [point, setPoint] = useState({});
@@ -12,13 +12,13 @@ const Test = () => {
   const [address, setAddress] = useState({});
   const [location, setLocation] = useState({});
   const [isLoaded, setIsLoaded] = useState(false);
-
+  const [event, setEvent] = useState();
+  const [isEventLoaded, setIsEventLoaded] = useState(false);
   getCurrentLocation = async () => {
     var { coords } = await Location.getCurrentPositionAsync();
 
     setPoint({ lat: coords.latitude, long: coords.longitude });
 
-    console.log(coords);
     setAddress(
       await Location.reverseGeocodeAsync({
         latitude: coords.latitude,
@@ -41,7 +41,7 @@ const Test = () => {
       alert("Sorry, we need location permissions to make this work!");
       return;
     }
-    console.log(status);
+
     // 권한이 허용되면 추가적인 위치 관련 작업 수행
   }
 
@@ -83,11 +83,13 @@ const Test = () => {
           <WeatherListView weatherData={weather} />
           <View style={{ marginTop: 20 }} />
           <Maps
-            onMarkerClick={(event) => {
-              //todo 여기에 마커를 눌렀을 때 값을 다루는 함수 실행 혹은 외부에서 함수를 가져와서 함수를 호출해도 됨
-              console.log(event);
+            onMarkerClick={(item) => {
+              setEvent(item);
+              setIsEventLoaded(true);
             }}
           />
+
+          {isEventLoaded ? <RenderItem item={event} index={0} /> : null}
         </View>
       ) : (
         <ActivityIndicator size="large" color="#0000ff" />

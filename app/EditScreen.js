@@ -72,7 +72,6 @@ const EditScreen = ({}) => {
   };
 
   const handleStartTimeChange = (selectedTime) => {
-    console.log(selectedTime);
     setStartTime(selectedTime);
     setStartTimePicker(false);
   };
@@ -117,7 +116,6 @@ const EditScreen = ({}) => {
   const loadScheduleData = async () => {
     const data = await getScheduleDataByID(glob.id);
 
-    console.log(data);
     setEventText(data[0].text);
     setIsAllDay(data[0].isAllDay);
     setStartDate(new Date(data[0].startDate));
@@ -182,6 +180,7 @@ const EditScreen = ({}) => {
 
     updateScheduleData(glob.id, newEvent);
 
+    // 아래의 코드는 Firebase에 등록할 코드, 다만 로그인을 구현하지 않아 주석처리하였음.
     // await setDoc(doc(db, "user", "ss", "ss", "Ss"), newEvent);
     router.push({ pathname: "/", params: { update: true } });
   };

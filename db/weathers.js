@@ -114,36 +114,88 @@ const insertWeatherData = async (weatherData, x, y) => {
 const checkWeatherData = async (x, y, baseDate, baseTime) => {
   const db = SQLite.openDatabase("db.db");
 
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
+  try {
+    return new Promise((resolve, reject) => {
       tx.executeSql(
-        `SELECT * FROM weather WHERE loc_x = ? AND loc_y = ? AND baseDate = ? AND baseTime = ?;`,
-        [x, y, baseDate, baseTime],
-        (_, result) => {
-          let data = [];
-          for (let i = 0; i < result.rows.length; i++) {
-            data.push(result.rows.item(i));
-          }
-          resolve(data); // 반환할 데이터
-          // }
-          //  else {
-          // 일치하는 레코드가 없습니다.
-          // resolve(false);
-          // }
-        },
-        (_, error) => {
-          // 쿼리 실행 중 오류 발생
-          reject(error);
-        }
+        `CREATE TABLE IF NOT EXISTS weather (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        LOC_X INTEGER,
+        LOC_Y INTEGER,
+        PCP TEXT,
+        POP TEXT,
+        PTY TEXT,
+        REH TEXT,
+        SKY TEXT,
+        SNO TEXT,
+        TMP TEXT,
+        UUU TEXT,
+        VEC TEXT,
+        VVV TEXT,
+        WAV TEXT,
+        WSD TEXT,
+        baseDate TEXT,
+        baseTime TEXT,
+        fcstDate TEXT,
+        fcstTime TEXT
+      );`
       );
+
+      db.transaction((tx) => {
+        tx.executeSql(
+          `SELECT * FROM weather WHERE loc_x = ? AND loc_y = ? AND baseDate = ? AND baseTime = ?;`,
+          [x, y, baseDate, baseTime],
+          (_, result) => {
+            let data = [];
+            for (let i = 0; i < result.rows.length; i++) {
+              data.push(result.rows.item(i));
+            }
+            resolve(data); // 반환할 데이터
+            // }
+            //  else {
+            // 일치하는 레코드가 없습니다.
+            // resolve(false);
+            // }
+          },
+          (_, error) => {
+            // 쿼리 실행 중 오류 발생
+            reject(error);
+          }
+        );
+      });
     });
-  });
+  } catch (exception) {
+    return [];
+  }
 };
 
 const selectWeatherData = async () => {
   const db = SQLite.openDatabase("db.db");
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
+      tx.executeSql(
+        `CREATE TABLE IF NOT EXISTS weather (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          LOC_X INTEGER,
+          LOC_Y INTEGER,
+          PCP TEXT,
+          POP TEXT,
+          PTY TEXT,
+          REH TEXT,
+          SKY TEXT,
+          SNO TEXT,
+          TMP TEXT,
+          UUU TEXT,
+          VEC TEXT,
+          VVV TEXT,
+          WAV TEXT,
+          WSD TEXT,
+          baseDate TEXT,
+          baseTime TEXT,
+          fcstDate TEXT,
+          fcstTime TEXT
+        );`
+      );
+
       tx.executeSql(
         `SELECT * FROM weather ;`,
         [],
